@@ -10,6 +10,8 @@ public class Token
                         //          sum = { prod { ("+"|"-") prod } }
                         //          prod = { atom { ("*"|"/"|"%") atom } }
                         // ist das für Punkt for Strich?
+        LOP,            // % * /
+        POP,            // + -
         BOOLOP,         // !, ggf weitere wie == , >= , <=
         BLOCKSTART,     // {
         BLOCKEND,       // }
@@ -17,6 +19,7 @@ public class Token
         BRACKETEND,     // )
         SEM,            // ;
         SETTO,          // Zuweisung, einzelnes =
+        COMP,           // Vergleich ==
         IDENTIFIER,     // Folge an Characters
         KEYDOUBLE,      // Double Schlüsselwort
         DOUBLE,         // Double Value
@@ -24,7 +27,7 @@ public class Token
         INT,            // Int Value
         KEYBOOL,        // Bool Schlüsselwort
         BOOL,           // Bool Value
-        IF,             // if
+        IFSTART,        // if(
         ELSE,           // else
         WHILE,          // while
         ERROR,          // Lexer Error
