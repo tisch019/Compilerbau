@@ -530,7 +530,7 @@ class StateNode extends ExprNode {
     Type stateOfNode;
     ExprNode newStateNode;
 
-    public StateNode(ExprNode node, Type targetType) {
+    public StateNode(ExprNode node, Type targetType, Token content, boolean accept) {
         super(node.start, node.end);
         newStateNode = node;
         type = stateOfNode = targetType;
@@ -539,6 +539,61 @@ class StateNode extends ExprNode {
     @Override
     public String toString(String indent) {
         return "StateNode";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return stateOfNode;
+    }
+    public Value runExpr() {
+        Value erg = castNode.runExpr().copy();
+        erg.type = castTo;
+        erg.d = erg.i;
+        return erg;
+    }
+}
+
+class RangeNode extends ExprNode {
+    Type stateOfNode;
+    ExprNode newStateNode;
+
+    public RangeNode(ExprNode node, Type targetType, Token content, boolean accept) {
+        super(node.start, node.end);
+        newStateNode = node;
+        type = stateOfNode = targetType;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return "RangeNode";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return stateOfNode;
+    }
+    public Value runExpr() {
+        Value erg = castNode.runExpr().copy();
+        erg.type = castTo;
+        erg.d = erg.i;
+        return erg;
+    }
+}
+
+
+class TransitionNode extends ExprNode {
+    Type stateOfNode;
+    ExprNode newStateNode;
+
+    public TransitionNode(ExprNode node, Type targetType, Token content, boolean accept) {
+        super(node.start, node.end);
+        newStateNode = node;
+        type = stateOfNode = targetType;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return "TransitionNode";
     }
 
     @Override
