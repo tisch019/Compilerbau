@@ -2,7 +2,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-//Abstrakte Klassen für alle folgenden Node-Typen
+//Abstrakte Klassen für alle folgenden Node-Typen (ueu)
 public abstract class Node {
     Token start, end;
 
