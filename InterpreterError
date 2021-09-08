@@ -1,7 +1,7 @@
 
 public class InterpreterError extends Exception {
     String message;
-    public CompilerError(String msg) {
+    public InterpreterError(String msg) {
         message = msg;
     }
     public String toString(){

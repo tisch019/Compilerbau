@@ -12,7 +12,8 @@ public abstract class Node {
     }
     public abstract String toString(String indent);
 
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<CompilerError> errors) {}
+    InterpreterError test("e");
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {}
 
     public void run() {}
 }
@@ -23,7 +24,7 @@ abstract class ExprNode extends Node {
     public ExprNode(Token start, Token end) {
         super(start, end);
     }
-    public abstract Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<CompilerError> errors);
+    public abstract Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors);
     public abstract Value runExpr();
     public void run() { runExpr(); }
 }
@@ -43,7 +44,28 @@ abstract class StmntNode extends Node {
 }
 
 
+class PrintNode extends StmntNode {
+    ExprNode expr;
 
+    public PrintNode(Token start, Token end, ExprNode expr) {
+        super(start, end);
+        this.expr = expr;
+    }
+    public String toString(String indent) {
+        return indent+"PrintStatement\n"
+                +expr.toString(indent+"\t");
+    }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<CompilerError> errors) {
+        expr.semantischeAnalyseExpr(tabelle,errors);
+    }
+    public void run() {
+        Value ausg = expr.runExpr();
+        if (ausg.type == Type.booleanType) System.out.println(ausg.b);
+        else if (ausg.type == Type.doubleType) System.out.println(ausg.d);
+        else if (ausg.type == Type.intType) System.out.println(ausg.i);
+        else System.out.println("unknown type");
+    }
+}
 
 
 
