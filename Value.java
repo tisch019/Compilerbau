@@ -5,7 +5,7 @@ public class Value {
     boolean b;
     int i;
     double d;
-    State a;
+    State s;
     Range r;
     Transition t;
     FiniteAutomata fa;
