@@ -12,7 +12,6 @@ public abstract class Node {
     }
     public abstract String toString(String indent);
 
-    InterpreterError test("e");
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {}
 
     public void run() {}
