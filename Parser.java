@@ -1,3 +1,5 @@
+import Bibliothek.*;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -5,10 +7,10 @@ import java.util.Set;
 
 public class Parser {
     Filter filter;
-    List<CompilerError> errors;
+    List<InterpreterError> errors;
 
 
-    public Parser(Filter filter, List<CompilerError> errors) {
+    public Parser(Filter filter, List<InterpreterError> errors) {
         this.filter = filter;
         this.errors = errors;
     }
@@ -20,7 +22,7 @@ public class Parser {
         sync.add(Token.Type.EOF);
         sync.add(Token.Type.KEYDOUBLE);
         sync.add(Token.Type.KEYINT);
-        sync.add(Token.Type.IF);
+        sync.add(Token.Type.IFSTART);
         sync.add(Token.Type.WHILE);
         sync.add(Token.Type.PRINT);
         sync.add(Token.Type.SEM);
@@ -78,7 +80,7 @@ public class Parser {
 
        StmntNode res = null;
 
-       if (kind == Token.Type.IF) res=ifStmnt(synco);
+       if (kind == Token.Type.IFSTART) res=ifStmnt(synco);
        else if (kind == Token.Type.WHILE) res=whileStmnt(synco);
        else if (kind == Token.Type.BLOCKSTART) res=block(synco);
        else if (kind == Token.Type.PRINT) res=printStmnt(synco);
@@ -118,7 +120,7 @@ public class Parser {
     IfNode ifStmnt(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync = new HashSet<>(synco);
         sync.add(Token.Type.ELSE);
-        sync.add(Token.Type.IF);
+        sync.add(Token.Type.IFSTART);
         sync.add(Token.Type.WHILE);
         sync.add(Token.Type.PRINT);
         sync.add(Token.Type.BLOCKSTART);
@@ -131,12 +133,12 @@ public class Parser {
         filter.matchToken(); // must be "if"
         toElse: {
             try {
-                filter.matchToken(Token.Type.BR, sync);
+                filter.matchToken(Token.Type.BRACKETSTART, sync);
                 expr = expr(sync);
-                filter.matchToken(Token.Type.BRC, sync);
+                filter.matchToken(Token.Type.BRACKETEND, sync);
             } catch (ParserError error) {
                 if (filter.getToken().kind == Token.Type.ELSE) break toElse;
-                else if (filter.getToken().kind == Token.Type.IF || filter.getToken().kind == Token.Type.WHILE
+                else if (filter.getToken().kind == Token.Type.IFSTART || filter.getToken().kind == Token.Type.WHILE
                         || filter.getToken().kind == Token.Type.PRINT || filter.getToken().kind == Token.Type.SEM
                         || filter.getToken().kind == Token.Type.BLOCKSTART) ;
                 else throw error;
@@ -161,7 +163,7 @@ public class Parser {
     // sync:                          ^ else, First(stmnt)
     WhileNode whileStmnt(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync = new HashSet<>(synco);
-        sync.add(Token.Type.IF);
+        sync.add(Token.Type.IFSTART);
         sync.add(Token.Type.WHILE);
         sync.add(Token.Type.PRINT);
         sync.add(Token.Type.BLOCKSTART);
@@ -172,11 +174,11 @@ public class Parser {
         Token start = filter.getToken();
         filter.matchToken(); // must be "while"
         try {
-            filter.matchToken(Token.Type.BR,sync);
+            filter.matchToken(Token.Type.BRACKETSTART,sync);
             expr = expr(sync);
-            filter.matchToken(Token.Type.BRC,sync);
+            filter.matchToken(Token.Type.BRACKETEND,sync);
         } catch (ParserError error) {
-            if (filter.getToken().kind == Token.Type.IF || filter.getToken().kind == Token.Type.WHILE
+            if (filter.getToken().kind == Token.Type.IFSTART || filter.getToken().kind == Token.Type.WHILE
                     || filter.getToken().kind == Token.Type.PRINT || filter.getToken().kind == Token.Type.SEM
                     || filter.getToken().kind == Token.Type.BLOCKSTART) ;
             else throw error;
@@ -213,7 +215,7 @@ public class Parser {
         sync.add(Token.Type.BLOCKEND);
         sync.add(Token.Type.KEYDOUBLE);
         sync.add(Token.Type.KEYINT);
-        sync.add(Token.Type.IF);
+        sync.add(Token.Type.IFSTART);
         sync.add(Token.Type.WHILE);
         sync.add(Token.Type.PRINT);
         sync.add(Token.Type.SEM);
@@ -233,7 +235,7 @@ public class Parser {
                 else res.add(stmnt(sync));
             } catch (ParserError error) {
                 if (filter.getToken().kind == Token.Type.BLOCKEND) break toBlockend;
-                else if (filter.getToken().kind == Token.Type.IF || filter.getToken().kind == Token.Type.WHILE
+                else if (filter.getToken().kind == Token.Type.IFSTART || filter.getToken().kind == Token.Type.WHILE
                         || filter.getToken().kind == Token.Type.PRINT || filter.getToken().kind == Token.Type.SEM
                         || filter.getToken().kind == Token.Type.BLOCKSTART) ;
                 else throw error;
@@ -357,10 +359,10 @@ public class Parser {
             filter.matchToken();
             res = new UnOpNode(op, atom(synco));
         }
-        else if (filter.getToken().kind == Token.Type.BR) {
+        else if (filter.getToken().kind == Token.Type.BRACKETSTART) {
             filter.matchToken();
             res = expr(synco);
-            filter.matchToken(Token.Type.BRC, synco);
+            filter.matchToken(Token.Type.BRACKETSTART, synco);
         }
         else {
             Token currentToken = filter.getToken();
