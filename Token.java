@@ -1,18 +1,11 @@
-import java.util.Set;
-
 public class Token
 {
     public enum Type
     {
-        BINOP,          // Binäre Operation, + - * /
-                        // an dieser Stelle macht Rettinger POP und LOP
-                        // er baut seine Gramatik wie folgt auf
-                        //          sum = { prod { ("+"|"-") prod } }
-                        //          prod = { atom { ("*"|"/"|"%") atom } }
-                        // ist das für Punkt for Strich?
         LOP,            // % * /
         POP,            // + -
-        BOOLOP,         // !, ggf weitere wie == , >= , <=
+        BOOLOP,         // BoolOperationen: == , >= , <=
+        BOOLNEG,        // !
         BLOCKSTART,     // {
         BLOCKEND,       // }
         BRACKETSTART,   // (
