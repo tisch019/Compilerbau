@@ -1,4 +1,4 @@
-
+package Bibliothek;
 // Diese Klasse ist kein Teil der Bibliothek
 // Sie soll Beispiele für die Anwendung der Bibliothek geben
 
