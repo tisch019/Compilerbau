@@ -1,4 +1,4 @@
-
+package Bibliothek;
 // Eine Menge von Buchstaben
 
 import java.util.LinkedList;

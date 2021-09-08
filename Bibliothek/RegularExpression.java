@@ -1,4 +1,4 @@
-import sun.awt.image.ImageWatched;
+package Bibliothek;
 
 import java.util.HashMap;
 import java.util.HashSet;
