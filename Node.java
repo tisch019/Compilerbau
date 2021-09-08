@@ -1,6 +1,8 @@
 import java.util.LinkedList;
 import java.util.List;
 
+import Bibliothek.State;
+
 
 //Abstrakte Klassen für alle folgenden Node-Typen
 public abstract class Node {
@@ -148,7 +150,7 @@ class PrintNode extends StmntNode {
         if (ausg.type == Type.booleanType) System.out.println(ausg.b);
         else if (ausg.type == Type.doubleType) System.out.println(ausg.d);
         else if (ausg.type == Type.intType) System.out.println(ausg.i);
-        else if (ausg.type == Type.stateType) System.out.println(ausg.a);
+        else if (ausg.type == Type.stateType) System.out.println(ausg.s);
         else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
         else if (ausg.type == Type.transitionTape) System.out.println(ausg.t);
         else if (ausg.type == Type.finiteAutomataType) System.out.println(ausg.fa);
@@ -552,6 +554,32 @@ class StateNode extends ExprNode {
         return erg;
     }
 }
+
+/*class StateNode extends ExprNode{
+    boolean accept = false;
+    Token content;
+
+    public StateNode(Token content){
+        super(content,content);
+        this.content = content;
+    }
+    public String toString(String indent){
+        return indent+"State "+content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors){
+        return type = Type.stateType;
+    }
+    public Value runExpr(){
+        Value erg = new Value();
+        erg.type = Type.stateType;
+        if(accept)
+            erg.s = new State(content.content,1);
+        else
+            erg.s = new State(content.content);
+        return erg;
+    }
+}*/
+
 
 class RangeNode extends ExprNode {
     Type stateOfNode;
