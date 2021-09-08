@@ -27,6 +27,7 @@ public class Token
         WS,             // whitespace ' ', \t, \n, \r
         RANGE,          // [...]
         STATE,          // $"..."
+        STATEACC,       // $"..."^1
         TRANSSTART,     // --
         TRANSEND,       // -->
         TRANSEPSI,      // --->
