@@ -8,6 +8,8 @@ public class Type {
     public static Type intType = new Type("int");
     public static Type booleanType = new Type("boolean");
     public static Type errorType = new Type("error");
+    public static Type stateType = new Type("state");
+    public static Type rangeType = new Type("range");
 
     public String toString() {
         return name;

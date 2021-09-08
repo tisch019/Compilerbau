@@ -54,7 +54,7 @@ class PrintNode extends StmntNode {
         return indent+"PrintStatement\n"
                 +expr.toString(indent+"\t");
     }
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<CompilerError> errors) {
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         expr.semantischeAnalyseExpr(tabelle,errors);
     }
     public void run() {
@@ -76,7 +76,7 @@ class EmptyStmntNode extends StmntNode {
         return indent+"EmptyStmnt";
     }
 
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<CompilerError> errors) { }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) { }
 }
 
 
@@ -99,7 +99,7 @@ class IfNode extends StmntNode {
                 +stmnt.toString(indent+"\t")
                 + (elseStmnt!=null ? "\n"+elseStmnt.toString(indent+"\t") : "");
     }
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<CompilerError> errors) {
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         if (expr.semantischeAnalyseExpr(tabelle,errors) != Type.booleanType)
         {
             errors.add(new SemanticError(start,end,"if-expression must be boolean"));
@@ -128,7 +128,7 @@ class WhileNode extends StmntNode {
                 +expr.toString(indent+"\t")+"\n"
                 +stmnt.toString(indent+"\t");
     }
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<CompilerError> errors) {
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         if (expr.semantischeAnalyseExpr(tabelle, errors) != Type.booleanType)
         {
             errors.add(new SemanticError(start,end,"while-condition must be boolean"));
