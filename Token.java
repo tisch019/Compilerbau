@@ -36,6 +36,7 @@ public class Token
         SET,            // {...} von BLOCKSTART zu unterscheiden
         MAP,            // [["...":1,"...":2,...]]
         ARRAY,          // [[...]]
+        PRINT,          // Print Befehl zur Ausgabe
         EOF             // End des Streams / Quelldatei
     };
     
