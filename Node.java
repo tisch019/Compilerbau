@@ -2,7 +2,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-//Abstrakte Klassen für alle folgenden Node-Typen (ueu)
+//Abstrakte Klassen für alle folgenden Node-Typen
 public abstract class Node {
     Token start, end;
 
@@ -45,6 +45,10 @@ abstract class StmntNode extends Node {
 
 
 
+
+
+
+
 //Klassen aus Abstract-Klassen erstellt
 class CUNode extends Node {
     List<Node> declAndStmnts =  new LinkedList<>();
@@ -70,6 +74,60 @@ class CUNode extends Node {
      }
  }
 
+ class DeclNode extends Node {
+    Token typ;
+    Token name;
+    Value wert;
+
+    public DeclNode(Token typ, Token name, Token end) {
+        super(typ, end);
+        this.typ = typ;
+        this.name = name;
+        wert = new Value();
+        if (typ.content.equals("int")) wert.type = Type.intType;
+        else wert.type = Type.doubleType;
+        switch(typ.content)
+        {
+            case("int"):
+                wert.type = Type.intType;
+            case("double"):
+                wert.type = Type.doubleType;
+            case("boolean"):
+                wert.type = Type.booleanType;
+            case("state"):
+                wert.type = Type.stateType;
+            case("range"):
+                wert.type = Type.rangeType;
+            case("transition"):
+                wert.type = Type.transitionTape;
+            case("finiteAutomata"):
+                wert.type = Type.finiteAutomataType;
+            case("regularExpression"):
+                wert.type = Type.regularExpressionType;
+        }
+
+    }
+    public String toString(String indent) {
+        return indent+"Declaration: "+typ.content+" "+name.content;
+    }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        tabelle.add(name.content, Type.getType(typ.content), this);
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class PrintNode extends StmntNode {
     ExprNode expr;
@@ -90,6 +148,11 @@ class PrintNode extends StmntNode {
         if (ausg.type == Type.booleanType) System.out.println(ausg.b);
         else if (ausg.type == Type.doubleType) System.out.println(ausg.d);
         else if (ausg.type == Type.intType) System.out.println(ausg.i);
+        else if (ausg.type == Type.stateType) System.out.println(ausg.a);
+        else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
+        else if (ausg.type == Type.transitionTape) System.out.println(ausg.t);
+        else if (ausg.type == Type.finiteAutomataType) System.out.println(ausg.fa);
+        else if (ausg.type == Type.regularExpressionType) System.out.println(ausg.re);
         else System.out.println("unknown type");
     }
 }
@@ -169,6 +232,66 @@ class WhileNode extends StmntNode {
     }
 }
 
+class BlockNode extends StmntNode {
+    List<Node> declAndStmnts =  new LinkedList<>();
+    public BlockNode(Token start, Token end) {
+        super(start, end);
+    }
+    public void add(Node node) {
+        declAndStmnts.add(node);
+    }
+    public String toString(String indent) {
+        String res = indent+"BlockStatement";
+        for (Node node:declAndStmnts) res += "\n"+node.toString(indent+"\t");
+        return res;
+    }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        SymbolTabelle lokal = new SymbolTabelle(tabelle);
+        for (Node node: declAndStmnts) node.semantischeAnalyse(lokal, errors);
+    }
+    public void run() {
+        for (Node node: declAndStmnts) node.run();
+    }
+}
+
+class ExprStmntNode extends StmntNode {
+    ExprNode expr;
+
+    public ExprStmntNode(ExprNode expr, Token end) {
+        super(expr.start, end);
+        this.expr = expr;
+    }
+    public String toString(String indent) {
+        return indent+"ExpressionStatement\n"+expr.toString(indent+"\t");
+    }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
+       expr.semantischeAnalyseExpr(tabelle, errors);
+    }
+    public void run() {
+        expr.run();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class NumberINode extends NumberNode {
     public NumberINode(Token content) {
         super(content);
@@ -199,6 +322,56 @@ class NumberDNode extends NumberNode {
     public Value runExpr() {
         Value erg = new Value(); erg.type = Type.doubleType;
         erg.d = Double.parseDouble(content.content);
+        return erg;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class IdentifierNode extends ExprNode {
+    Token content;
+    DeclNode dn;
+    // int i;
+
+    public IdentifierNode(Token content) {
+        super(content,content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"Identifier: "+content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        TypeNodePair ergP = tabelle.find(content.content);
+        Type erg;
+        if (ergP==null) {
+            errors.add(new SemanticError(start, end, "Unknown identifier "+content.content));
+            erg = Type.errorType;
+        }
+        else {
+            erg = ergP.type;
+            dn = ergP.node;
+        }
+        return type = erg;
+    }
+    public Value runSetExpr(Value v) {
+        dn.wert = v.copy();
+        return v;
+    }
+
+    public Value runExpr() {
+        Value erg = dn.wert.copy();
         return erg;
     }
 }
@@ -327,47 +500,55 @@ class UnOpNode extends ExprNode {
     }
 }
 
+class CastNode extends ExprNode {
+    Type castTo;
+    ExprNode castNode;
+    public CastNode(ExprNode node, Type targetType) {
+        super(node.start, node.end);
+        castNode = node;
+        type = castTo = targetType;
+    }
 
-class BlockNode extends StmntNode {
-    List<Node> declAndStmnts =  new LinkedList<>();
-    public BlockNode(Token start, Token end) {
-        super(start, end);
-    }
-    public void add(Node node) {
-        declAndStmnts.add(node);
-    }
+    @Override
     public String toString(String indent) {
-        String res = indent+"BlockStatement";
-        for (Node node:declAndStmnts) res += "\n"+node.toString(indent+"\t");
-        return res;
+        return "CastNode";
     }
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        SymbolTabelle lokal = new SymbolTabelle(tabelle);
-        for (Node node: declAndStmnts) node.semantischeAnalyse(lokal, errors);
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return castTo;
     }
-    public void run() {
-        for (Node node: declAndStmnts) node.run();
+    public Value runExpr() {
+        Value erg = castNode.runExpr().copy();
+        erg.type = castTo;
+        erg.d = erg.i;
+        return erg;
     }
 }
 
-class DeclNode extends Node {
-    Token typ;
-    Token name;
-    Value wert;
+class StateNode extends ExprNode {
+    Type stateOfNode;
+    ExprNode newStateNode;
 
-    public DeclNode(Token typ, Token name, Token end) {
-        super(typ, end);
-        this.typ = typ;
-        this.name = name;
-        wert = new Value();
-        if (typ.content.equals("int")) wert.type = Type.intType;
-        else wert.type = Type.doubleType;
+    public StateNode(ExprNode node, Type targetType) {
+        super(node.start, node.end);
+        newStateNode = node;
+        type = stateOfNode = targetType;
     }
+
+    @Override
     public String toString(String indent) {
-        return indent+"Declaration: "+typ.content+" "+name.content;
-    }
-    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        tabelle.add(name.content, Type.getType(typ.content), this);
+        return "StateNode";
     }
 
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return stateOfNode;
+    }
+    public Value runExpr() {
+        Value erg = castNode.runExpr().copy();
+        erg.type = castTo;
+        erg.d = erg.i;
+        return erg;
+    }
 }

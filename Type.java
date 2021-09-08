@@ -1,5 +1,5 @@
 public class Type {
-    String name;
+     String name;
     public Type(String name) {
         this.name = name;
     }

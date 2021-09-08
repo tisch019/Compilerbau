@@ -5,10 +5,10 @@ import java.util.Set;
 
 public class Parser {
     Filter filter;
-    List<CompilerError> errors;
+    List<InterpreterError> errors;
 
 
-    public Parser(Filter filter, List<CompilerError> errors) {
+    public Parser(Filter filter, List<InterpreterError> errors) {
         this.filter = filter;
         this.errors = errors;
     }
