@@ -1,8 +1,15 @@
+import Bibliothek.*;
+
 public class Value {
     Type type;
     boolean b;
     int i;
     double d;
+    State a;
+    Range r;
+    Transition t;
+    FiniteAutomata fa;
+    RegularExpression re;
 
     public Value() {};
 
