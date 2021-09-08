@@ -43,6 +43,34 @@ abstract class StmntNode extends Node {
 }
 
 
+
+
+//Klassen aus Abstract-Klassen erstellt
+class CUNode extends Node {
+    List<Node> declAndStmnts =  new LinkedList<>();
+    public CUNode() {
+        super(null, null);
+    }
+    public void add(Node node) {
+        declAndStmnts.add(node);
+        if (start==null) start = node.start;
+        end = node.end;
+    }
+     public String toString(String indent) {
+        String res = indent+"CompilationUnit";
+        for (Node node:declAndStmnts) res += "\n"+node.toString(indent+"\t");
+        return res;
+     }
+     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        SymbolTabelle global = new SymbolTabelle(null);
+        for (Node node: declAndStmnts) node.semantischeAnalyse(global, errors);
+     }
+     public void run() {
+         for (Node node: declAndStmnts) node.run();
+     }
+ }
+
+
 class PrintNode extends StmntNode {
     ExprNode expr;
 
@@ -141,4 +169,205 @@ class WhileNode extends StmntNode {
     }
 }
 
+class NumberINode extends NumberNode {
+    public NumberINode(Token content) {
+        super(content);
+    }
+    public String toString(String indent) {
+        return indent+"Integer: "+content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.intType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.intType;
+        erg.i = Integer.parseInt(content.content);
+        return erg;
+    }
+}
 
+class NumberDNode extends NumberNode {
+    public NumberDNode(Token content) {
+        super(content);
+    }
+    public String toString(String indent) {
+        return indent+"Double: "+content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.doubleType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.doubleType;
+        erg.d = Double.parseDouble(content.content);
+        return erg;
+    }
+}
+
+class BinOpNode extends ExprNode {
+    Token op;
+    ExprNode left, right;
+
+    public BinOpNode(Token op, ExprNode left, ExprNode right) {
+        super(left.start, right.end);
+        this.left = left;
+        this.right = right;
+        this.op = op;
+    }
+    public String toString(String indent) {
+        return indent+"Binary Operator: "+op.content + " type "+type
+                + "\n"+left.toString(indent+"\t")
+                + "\n"+right.toString(indent+"\t");
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        Type leftT = left.semantischeAnalyseExpr(tabelle, errors);
+        Type rightT = right.semantischeAnalyseExpr(tabelle, errors);
+        if (leftT!=rightT) {
+            if (leftT == Type.kgT(leftT, rightT))
+                right = new CastNode(right, Type.kgT(leftT, rightT));
+            else left = new CastNode(left, Type.kgT(leftT, rightT));
+        }
+        if (op.kind == Token.Type.COMP) return type = Type.booleanType;
+        else return type = Type.kgT(leftT, rightT);
+    }
+    public Value runExpr() {
+        Value leftV = left.runExpr();
+        Value rightV = right.runExpr();
+        Value erg  = new Value();
+
+        if (op.kind == Token.Type.COMP) {
+            erg.type = Type.booleanType;
+            switch (op.content) {
+                case "<": if (type == Type.doubleType)
+                    erg.b = leftV.d < rightV.d;
+                else if (type == Type.intType)
+                    erg.b = leftV.i < rightV.i;
+                    break;
+                case ">": if (type == Type.doubleType)
+                    erg.b = leftV.d > rightV.d;
+                else if (type == Type.intType)
+                    erg.b = leftV.i > rightV.i;
+                    break;
+            }
+        }
+        else if (op.kind == Token.Type.POP) {
+            erg.type = type;
+            switch (op.content) {
+                case "+": if (type == Type.doubleType)
+                    erg.d = leftV.d + rightV.d;
+                else if (type == Type.intType)
+                    erg.i = leftV.i + rightV.i;
+                    break;
+                case "-": if (type == Type.doubleType)
+                    erg.d = leftV.d - rightV.d;
+                else if (type == Type.intType)
+                    erg.i = leftV.i - rightV.i;
+                    break;
+            }
+        }
+        else if (op.kind == Token.Type.LOP) {
+            erg.type = type;
+            switch (op.content) {
+                case "*": if (type == Type.doubleType)
+                    erg.d = leftV.d * rightV.d;
+                else if (type == Type.intType)
+                    erg.i = leftV.i * rightV.i;
+                    break;
+                case "/": if (type == Type.doubleType)
+                    erg.d = leftV.d / rightV.d;
+                else if (type == Type.intType)
+                    erg.i = leftV.i / rightV.i;
+                    break;
+                case "%": if (type == Type.doubleType)
+                    erg.d = leftV.d % rightV.d;
+                else if (type == Type.intType)
+                    erg.i = leftV.i % rightV.i;
+                    break;
+            }
+        }
+        else if (op.kind == Token.Type.SETTO) {
+            erg = ((IdentifierNode)left).runSetExpr(rightV).copy();
+            erg.type = type;
+        }
+        return erg;
+    }
+}
+
+class UnOpNode extends ExprNode {
+    Token op;
+    ExprNode kid;
+
+    public UnOpNode(Token op, ExprNode kid) {
+        super(op, kid.end); // pre-ops only
+        this.kid = kid;
+        this.op = op;
+    }
+    public String toString(String indent) {
+        return indent+"Unary Operator: "+op.content
+                + "\n"+kid.toString(indent+"\t");
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        Type kidT = kid.semantischeAnalyseExpr(tabelle, errors);
+        return type = kidT; // todo: testen ob ! -> boolean
+    }
+    public Value runExpr() {
+        Value leftV = kid.runExpr();
+        Value erg = leftV.copy();
+        switch (op.content) {
+            case "-":
+                if (erg.type == Type.doubleType)
+                    erg.d = - leftV.d ;
+                else if (erg.type == Type.intType)
+                    erg.i = -leftV.i;
+                break;
+            case "!": if (erg.type == Type.booleanType)
+                erg.b = !leftV.b;
+                break;
+        }
+        return erg;
+    }
+}
+
+
+class BlockNode extends StmntNode {
+    List<Node> declAndStmnts =  new LinkedList<>();
+    public BlockNode(Token start, Token end) {
+        super(start, end);
+    }
+    public void add(Node node) {
+        declAndStmnts.add(node);
+    }
+    public String toString(String indent) {
+        String res = indent+"BlockStatement";
+        for (Node node:declAndStmnts) res += "\n"+node.toString(indent+"\t");
+        return res;
+    }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        SymbolTabelle lokal = new SymbolTabelle(tabelle);
+        for (Node node: declAndStmnts) node.semantischeAnalyse(lokal, errors);
+    }
+    public void run() {
+        for (Node node: declAndStmnts) node.run();
+    }
+}
+
+class DeclNode extends Node {
+    Token typ;
+    Token name;
+    Value wert;
+
+    public DeclNode(Token typ, Token name, Token end) {
+        super(typ, end);
+        this.typ = typ;
+        this.name = name;
+        wert = new Value();
+        if (typ.content.equals("int")) wert.type = Type.intType;
+        else wert.type = Type.doubleType;
+    }
+    public String toString(String indent) {
+        return indent+"Declaration: "+typ.content+" "+name.content;
+    }
+    public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        tabelle.add(name.content, Type.getType(typ.content), this);
+    }
+
+}
