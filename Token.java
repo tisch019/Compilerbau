@@ -1,7 +1,3 @@
-import java.util.Set;
-
-import jdk.jfr.BooleanFlag;
-
 public class Token
 {
     public enum Type
