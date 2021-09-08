@@ -1,3 +1,5 @@
+package Bibliothek;
+
 public class State {
     String label;
     int accept;

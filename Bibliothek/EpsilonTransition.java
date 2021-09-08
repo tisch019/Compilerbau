@@ -1,3 +1,5 @@
+package Bibliothek;
+
 public class EpsilonTransition extends AbstractTransition {
     public EpsilonTransition(State start, State end) {
         super(start,end);
