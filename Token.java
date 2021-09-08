@@ -25,7 +25,8 @@ public class Token
         WHILE,          // while
         ERROR,          // Lexer Error
         WS,             // whitespace ' ', \t, \n, \r
-        RANGE,          // [...]
+        RANGESTART,     // [
+        RANGEEND,       // ]
         STATE,          // $"..."
         STATEACC,       // $"..."^1
         TRANSSTART,     // --
@@ -35,8 +36,10 @@ public class Token
         FAEND,          // >
         RA,             // /.../
         SET,            // {...} von BLOCKSTART zu unterscheiden
-        MAP,            // [["...":1,"...":2,...]]
-        ARRAY,          // [[...]]
+        MAPSTART,       // [["
+        MAPEND,         // ]]
+        ARRAYSTART,     // [[
+        ARRAYEND,       // ]]
         PRINT,          // Print Befehl zur Ausgabe
         EOF             // End des Streams / Quelldatei
     };

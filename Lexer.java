@@ -60,6 +60,16 @@ public class Lexer {
                             t.kind = Token.Type.BLOCKEND;
                             state = 100;
                             break;
+                        case '[':
+                            mark();
+                            t.kind = Token.Type.RANGESTART;
+                            state = 12;
+                            break;
+                        case ']':
+                            mark();
+                            t.kind = Token.Type.RANGEEND;
+                            state = 14;
+                            break;
                         case ';':
                             mark();
                             t.kind = Token.Type.SEM;
@@ -74,10 +84,14 @@ public class Lexer {
                             state = 100;
                             break;
                         case '+':
-                        case '-':
                             mark();
                             t.kind = Token.Type.POP;
                             state = 100;
+                            break;
+                        case '-':
+                            mark();
+                            t.kind = Token.Type.POP;
+                            state = 9;
                             break;
                         case '%':
                         case '*':
@@ -102,11 +116,6 @@ public class Lexer {
                             mark();
                             t.kind = Token.Type.SETTO;
                             state = 2;
-                            break;
-                        case 'i':
-                            mark();
-                            t.kind = Token.Type.IFSTART;
-                            state = 9;
                             break;
                         case -1:
                             mark();
@@ -148,10 +157,15 @@ public class Lexer {
                         state = 100;
                     break;
                 case 4:
-                    if (isDigit(nextChar))
+                    if (isDigit(nextChar)) {
                         mark();
-                    else
+                    }
+                    else if (nextChar == '.') {
+                        state = 15; // Check digits
+                    }
+                    else {
                         state = 100;
+                    }
                     break;
                 // Case 5 - 8 STATE
                 case 5:
@@ -174,10 +188,12 @@ public class Lexer {
                     }
                     break;
                 case 7:
-                    if (isIdentChar(nextChar) || isDigit(nextChar))
+                    if (isIdentChar(nextChar) || isDigit(nextChar)) {
                         mark();
-                    else
+                    }
+                    else {
                         state = 10;
+                    }
                     break;
                 case 8:
                     if (nextChar == '"') {
@@ -189,31 +205,78 @@ public class Lexer {
                         state = 100;
                     }
                     break;
-                // Case 9 - 10 IFSTART
                 case 9:
-                    if (nextChar == 'f') {
+                    if (nextChar == '-') {
                         mark();
+                        t.kind = Token.Type.TRANSSTART;
                         state = 10;
-                    } else if (isIdentChar(nextChar) || isDigit(nextChar)) {
+                    } else {
                         mark();
-                        t.kind = Token.Type.IDENTIFIER;
-                        state = 3;
+                        state = 100;
+                    }
+                    break;
+                case 10:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.TRANSEND;
+                        state = 100;
+                    } else if (nextChar == '-'){
+                        mark();
+                        state = 11;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 11:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.TRANSEPSI;
+                    }
+                    // --- Wird auch als TRANSSTART erkannt
+                    state = 100;
+                    break;
+                case 12:
+                    if (nextChar == '[') {
+                        mark();
+                        t.kind = Token.Type.ARRAYSTART;
+                        state = 13;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 13:
+                    if (nextChar == '"') {
+                        mark();
+                        t.kind = Token.Type.MAPSTART;
+                    }
+                    state = 100;
+                    break;
+                case 14:
+                    if (nextChar == ']') {
+                        mark();
+                        t.kind = Token.Type.TRANSEND; //TRANSEND oder ARRAYEND
+                        state = 10;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                // Case 15 -16 DOUBLE
+                case 15:
+                    if (isDigit(nextChar)) {
+                        mark();
+                        t.kind = Token.Type.DOUBLE;
+                        state = 16;
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
                     }
-                    break;
-                case 10:
-                    if (nextChar == '(') {
+                case 16:
+                    if (isDigit(nextChar)) {
                         mark();
-                        state = 100;
                     } else {
-                        mark();
-                        t.kind = Token.Type.IDENTIFIER;
-                        state = 3;
+                        state = 100;
                     }
-                    break;
             }
         } while (state != 100);
         if (marked == -1) {
