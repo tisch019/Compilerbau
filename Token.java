@@ -1,22 +1,22 @@
 import java.util.Set;
 
+import jdk.jfr.BooleanFlag;
+
 public class Token
 {
     public enum Type
     {
-        BINOP,          // Binäre Operation, + - * /
-                        // an dieser Stelle macht Rettinger POP und LOP
-                        // er baut seine Gramatik wie folgt auf
-                        //          sum = { prod { ("+"|"-") prod } }
-                        //          prod = { atom { ("*"|"/"|"%") atom } }
-                        // ist das für Punkt for Strich?
-        BOOLOP,         // !, ggf weitere wie == , >= , <=
+        LOP,            // % * /
+        POP,            // + -
+        BOOLOP,         // BoolOperationen: == , >= , <=
+        BOOLNEG,        // !
         BLOCKSTART,     // {
         BLOCKEND,       // }
         BRACKETSTART,   // (
         BRACKETEND,     // )
         SEM,            // ;
         SETTO,          // Zuweisung, einzelnes =
+        COMP,           // Vergleich ==
         IDENTIFIER,     // Folge an Characters
         KEYDOUBLE,      // Double Schlüsselwort
         DOUBLE,         // Double Value
@@ -24,7 +24,7 @@ public class Token
         INT,            // Int Value
         KEYBOOL,        // Bool Schlüsselwort
         BOOL,           // Bool Value
-        IF,             // if
+        IFSTART,        // if(
         ELSE,           // else
         WHILE,          // while
         ERROR,          // Lexer Error
