@@ -54,7 +54,20 @@ public class Token
         ARRAYSTART,     // [[
         ARRAYEND,       // ]]
         PRINT,          // Print Befehl zur Ausgabe
-        EOF             // End des Streams / Quelldatei
+        EOF,            // End des Streams / Quelldatei
+
+        //Token für Reguläre Ausdrücke
+        RE_BRACKETOPEN, // (
+        RE_BRACKETCLOSE,// )
+        RE_MARK,        // "
+        RE_CHAR,        // character single
+        RE_OR,          // |
+        RE_SBOPEN,      // [
+        RE_SBCLOSE,     // ]
+        RE_SINGLEMARK,  // '
+        RE_RANGECHAR,   // A
+        RE_RANGE,       // -
+        RE_COVER        // *
     };
     
     public Type kind;
