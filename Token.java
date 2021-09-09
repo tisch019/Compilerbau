@@ -26,6 +26,9 @@ public class Token
         ERROR,          // Lexer Error
         WS,             // whitespace ' ', \t, \n, \r
         RANGESTART,     // [
+        RANGESINGLE,    // character single (z.B. a)
+        RANGEBRSTART,   // Character mit 'a'
+        RANGEBREND,     // character z (Bsp.: a - z)
         RANGEEND,       // ]
         STATE,          // $"..."
         STATEACC,       // $"..."^1
