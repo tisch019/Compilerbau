@@ -10,9 +10,12 @@ public class Token
         BRACKETSTART,   // (
         BRACKETEND,     // )
         SEM,            // ;
+        COMMA,          // ,
         SETTO,          // Zuweisung, einzelnes =
-        COMP,           // Vergleich ==, >= , <=
+        COMP,           // Vergleich ==, !=, >= , <=
         IDENTIFIER,     // Folge an Characters
+        KEYSTRING,      // String Schlüsselwort
+        STRING,         // String Value
         KEYDOUBLE,      // Double Schlüsselwort
         DOUBLE,         // Double Value
         KEYINT,         // Int Schlüsselwort
