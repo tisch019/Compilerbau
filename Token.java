@@ -4,7 +4,6 @@ public class Token
     {
         LOP,            // % * /
         POP,            // + -
-        BOOLOP,         // BoolOperationen: == , >= , <=
         BOOLNEG,        // !
         BLOCKSTART,     // {
         BLOCKEND,       // }
@@ -12,7 +11,7 @@ public class Token
         BRACKETEND,     // )
         SEM,            // ;
         SETTO,          // Zuweisung, einzelnes =
-        COMP,           // Vergleich ==
+        COMP,           // Vergleich ==, >= , <=
         IDENTIFIER,     // Folge an Characters
         KEYDOUBLE,      // Double Schlüsselwort
         DOUBLE,         // Double Value

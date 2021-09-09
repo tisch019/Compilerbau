@@ -47,7 +47,7 @@ public class Lexer {
                             break;
                         case ')':
                             mark();
-                            t.kind = Token.Type.BRACKETSTART;
+                            t.kind = Token.Type.BRACKETEND;
                             state = 100;
                             break;
                         case '{':
@@ -91,7 +91,7 @@ public class Lexer {
                         case '-':
                             mark();
                             t.kind = Token.Type.POP;
-                            state = 9;
+                            state = 17;
                             break;
                         case '%':
                         case '*':
@@ -141,7 +141,7 @@ public class Lexer {
                         mark();
                     state = 100;
                     break;
-                // Case 2 COMPARE
+                // Case 2 SETTO COMPARE
                 case 2:
                     if (nextChar == '=') {
                         mark();
@@ -156,6 +156,7 @@ public class Lexer {
                     else
                         state = 100;
                     break;
+                // Case 4 INT
                 case 4:
                     if (isDigit(nextChar)) {
                         mark();
@@ -167,12 +168,13 @@ public class Lexer {
                         state = 100;
                     }
                     break;
-                // Case 5 - 8 STATE
+                // Case 5 - 10 STATE and STATEACC
                 case 5:
                     if (nextChar == '"') {
                         mark();
-                        state = 8;
+                        state = 6;
                     } else {
+                        mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
                     }
@@ -180,7 +182,7 @@ public class Lexer {
                 case 6:
                     if (isIdentChar(nextChar)) {
                         mark();
-                        state = 9;
+                        state = 7;
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
@@ -192,11 +194,30 @@ public class Lexer {
                         mark();
                     }
                     else {
-                        state = 10;
+                        state = 8;
                     }
                     break;
                 case 8:
                     if (nextChar == '"') {
+                        mark();
+                        state = 9;
+                    } else {
+                        mark();
+                        t.kind = Token.Type.ERROR;
+                        state = 100;
+                    }
+                    break;
+                case 9:
+                    if (nextChar == '^') {
+                        mark();
+                        state = 10;
+                        t.kind = Token.Type.STATEACC;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 10:
+                    if (nextChar == '1') {
                         mark();
                         state = 100;
                     } else {
@@ -205,36 +226,7 @@ public class Lexer {
                         state = 100;
                     }
                     break;
-                case 9:
-                    if (nextChar == '-') {
-                        mark();
-                        t.kind = Token.Type.TRANSSTART;
-                        state = 10;
-                    } else {
-                        mark();
-                        state = 100;
-                    }
-                    break;
-                case 10:
-                    if (nextChar == '>') {
-                        mark();
-                        t.kind = Token.Type.TRANSEND;
-                        state = 100;
-                    } else if (nextChar == '-'){
-                        mark();
-                        state = 11;
-                    } else {
-                        state = 100;
-                    }
-                    break;
-                case 11:
-                    if (nextChar == '>') {
-                        mark();
-                        t.kind = Token.Type.TRANSEPSI;
-                    }
-                    // --- Wird auch als TRANSSTART erkannt
-                    state = 100;
-                    break;
+                // Case 12 - 13 ARRAYSTART MAPSTART
                 case 12:
                     if (nextChar == '[') {
                         mark();
@@ -251,10 +243,11 @@ public class Lexer {
                     }
                     state = 100;
                     break;
+                // Case 14 MAPEND ARRAYEND
                 case 14:
                     if (nextChar == ']') {
                         mark();
-                        t.kind = Token.Type.TRANSEND; //TRANSEND oder ARRAYEND
+                        t.kind = Token.Type.TRANSEND; //MAPEND oder ARRAYEND
                         state = 10;
                     } else {
                         state = 100;
@@ -271,12 +264,45 @@ public class Lexer {
                         t.kind = Token.Type.ERROR;
                         state = 100;
                     }
+                    break;
                 case 16:
                     if (isDigit(nextChar)) {
                         mark();
                     } else {
                         state = 100;
                     }
+                    break;
+                // Case 17 - 19 TRANS
+                case 17:
+                    if (nextChar == '-') {
+                        mark();
+                        t.kind = Token.Type.TRANSSTART;
+                        state = 18;
+                    } else {
+                        mark();
+                        state = 100;
+                    }
+                    break;
+                case 18:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.TRANSEND;
+                        state = 100;
+                    } else if (nextChar == '-'){
+                        mark();
+                        state = 19;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 19:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.TRANSEPSI;
+                    }
+                    // --- Wird auch als TRANSSTART erkannt
+                    state = 100;
+                    break;
             }
         } while (state != 100);
         if (marked == -1) {
