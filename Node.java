@@ -604,7 +604,7 @@ class RangeNode extends ExprNode {
         Value erg;
         if(charA == charB) 
         {
-
+            erg = new Value(new Range(charA.content));
         }
     }
 }
