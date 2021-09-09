@@ -11,6 +11,7 @@ public class Type {
     public static Type stateType = new Type("state");
     public static Type rangeType = new Type("range");
     public static Type transitionType = new Type("transition");
+    public static Type epsilonTransitionType = new Type("epsilonTransition");
     public static Type finiteAutomataType = new Type("finiteAutomata");
     public static Type regularExpressionType = new Type("regularExpression");
 
@@ -33,6 +34,8 @@ public class Type {
                 return rangeType;
             case("transition"):
                 return transitionType;
+            case("epsilonTransition"):
+                return epsilonTransitionType;
             case("finiteAutomata"):
                 return finiteAutomataType;
             case("regularExpression"):

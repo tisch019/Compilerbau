@@ -1,7 +1,7 @@
 import java.util.LinkedList;
 import java.util.List;
 
-import Bibliothek.State;
+import Bibliothek.*;
 
 
 //Abstrakte Klassen für alle folgenden Node-Typen
@@ -102,6 +102,8 @@ class CUNode extends Node {
                 wert.type = Type.rangeType;
             case("transition"):
                 wert.type = Type.transitionType;
+            case("epsilonTransition"):
+                wert.type = Type.epsilonTransitionType;
             case("finiteAutomata"):
                 wert.type = Type.finiteAutomataType;
             case("regularExpression"):
@@ -153,6 +155,7 @@ class PrintNode extends StmntNode {
         else if (ausg.type == Type.stateType) System.out.println(ausg.s);
         else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
         else if (ausg.type == Type.transitionType) System.out.println(ausg.t);
+        else if (ausg.type == Type.epsilonTransitionType) System.out.println(ausg.et);
         else if (ausg.type == Type.finiteAutomataType) System.out.println(ausg.fa);
         else if (ausg.type == Type.regularExpressionType) System.out.println(ausg.re);
         else System.out.println("unknown type");
@@ -528,33 +531,10 @@ class CastNode extends ExprNode {
     }
 }
 
-/*class StateNode extends ExprNode {
-    Type stateOfNode;
-    ExprNode newStateNode;
 
-    public StateNode(ExprNode node, Type targetType, Token content, boolean accept) {
-        super(node.start, node.end);
-        newStateNode = node;
-        type = stateOfNode = targetType;
-    }
-
-    @Override
-    public String toString(String indent) {
-        return "StateNode";
-    }
-
-    @Override
-    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return stateOfNode;
-    }
-    public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.d = erg.i;
-        return erg;
-    }
-}*/
-
+//StateNode für den endlichen Automaten
+//In der runExpr wird mit einem Boolean-Flag geprüft, 
+//ob der State akzeptierend ist oder nicht
 class StateNode extends ExprNode{
     boolean accept = false;
     Token content;
@@ -580,7 +560,9 @@ class StateNode extends ExprNode{
     }
 }
 
-
+//RangeNode mit zwei Charakter-Token
+//Unterscheidung in der runExpr, ob die beiden Charakter-Token gleich sind oder nicht
+//Somit wird die Range unterschieden
 class RangeNode extends ExprNode {
     Token charA = null;
     Token charB = null;
@@ -604,35 +586,129 @@ class RangeNode extends ExprNode {
         Value erg;
         if(charA == charB) 
         {
-            erg = new Value(new Range(charA.content));
+            erg = new Value(new Range(charA.content.charAt(0)));
+        } else {
+            erg = new Value(new Range(charA.content.charAt(0), charB.content.charAt(0)));
         }
+        return erg;
     }
 }
 
 
-class TransitionNode extends ExprNode {
-    Type stateOfNode;
-    ExprNode newStateNode;
 
-    public TransitionNode(ExprNode node, Type targetType, Token content, boolean accept) {
-        super(node.start, node.end);
-        newStateNode = node;
-        type = stateOfNode = targetType;
+//Transitionnode beinhaltet zwei Konstruktoren:
+//Normaler Übergang: StartState -- [Range] --> EndState
+//Epsilon-Übergang : StartState ---> EndState
+//Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
+//und zwischen EpsilonTransition und normaler Transition unterschieden
+class TransitionNode extends ExprNode {
+    StateNode start = null;
+    StateNode end = null;
+    RangeNode r = null;
+
+    public TransitionNode(StateNode start, StateNode end, RangeNode r) {
+        super(start.content, end.content);
+        this.r = r;
+    }
+
+    public TransitionNode(StateNode start, StateNode end) {
+        super(start.content, end.content);
     }
 
     @Override
     public String toString(String indent) {
-        return "TransitionNode";
+        if(r == null)
+        {
+        return indent + "Transitionnode: $\""+ start.content +"\"--->$\"" + end.content + "\"";
+        } 
+        else
+        {
+            return indent + "Transitionnode: $\""+ start.content +"\"--['" + r.charA.content + "'-'"+ r.charB.content + "'" + "]-->$\"" + end.content + "\"";
+        }
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return stateOfNode;
+        return Type.transitionType;
     }
     public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.d = erg.i;
+        Value erg;
+
+        if(r == null)
+        {
+            erg = new Value(new EpsilonTransition(start.runExpr().s, end.runExpr().s));
+        } 
+        else 
+        {
+            erg = new Value(new Transition(start.runExpr().s, end.runExpr().s, r.runExpr().r));
+        }
         return erg;
     }
+}
+
+
+//FiniteAutomataNode gibt einen FiniteAutomata mit einem StartState wieder.
+//Transitionen werden über den Parser an den FiniteAutomata gebunden
+class FiniteAutomataNode extends ExprNode{
+    StateNode start = null;
+
+    public FiniteAutomataNode(StateNode start) {
+        super(start.content, start.content);
+    }
+
+    @Override
+    public String toString(String indent) {
+        
+        return indent + "FiniteAutomataNode: <$\"" + start.content + ", {}>";
+    }
+    
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.finiteAutomataType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value(new FiniteAutomata(start.runExpr().s));
+        return erg;
+    }
+
+}
+
+
+
+
+class RegularExpressionNode extends ExprNode {
+    String operation = null;
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+
+    public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left.start, right.end);
+    }
+
+    @Override
+    public String toString(String indent) {
+        
+        return null;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.regularExpressionType;
+    }
+
+    @Override
+    public Value runExpr() {
+        //Value erg;
+        if(operation == "or")
+        {
+           // erg = new Value(new )
+        }
+        return null;
+    }
+
+
+
+    
 }
