@@ -528,7 +528,7 @@ class CastNode extends ExprNode {
     }
 }
 
-class StateNode extends ExprNode {
+/*class StateNode extends ExprNode {
     Type stateOfNode;
     ExprNode newStateNode;
 
@@ -553,9 +553,9 @@ class StateNode extends ExprNode {
         erg.d = erg.i;
         return erg;
     }
-}
+}*/
 
-/*class StateNode extends ExprNode{
+class StateNode extends ExprNode{
     boolean accept = false;
     Token content;
 
@@ -578,14 +578,14 @@ class StateNode extends ExprNode {
             erg.s = new State(content.content);
         return erg;
     }
-}*/
+}
 
 
 class RangeNode extends ExprNode {
     Type stateOfNode;
     ExprNode newStateNode;
 
-    public RangeNode(ExprNode node, Type targetType, Token content, boolean accept) {
+    public RangeNode(ExprNode node, Type targetType, Token content) {
         super(node.start, node.end);
         newStateNode = node;
         type = stateOfNode = targetType;
