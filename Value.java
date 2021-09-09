@@ -8,6 +8,7 @@ public class Value {
     State s;
     Range r;
     Transition t;
+    EpsilonTransition et;
     FiniteAutomata fa;
     RegularExpression re;
 
@@ -27,9 +28,10 @@ public class Value {
     public Value(State s) { type = Type.stateType; this.s = s;}
     public Value(Range r) { type = Type.rangeType; this.r = r;}
     public Value(Transition t) { type = Type.transitionType; this.t = t;}
+    public Value(EpsilonTransition et) { type = Type.epsilonTransitionType; this.et = et;}
     public Value(FiniteAutomata fa) { type = Type.finiteAutomataType; this.fa = fa;}
     public Value(RegularExpression re) { type = Type.regularExpressionType; this.re = re;}
-    public Value(Value c) { type = c.type; d =c.d; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; fa=c.fa; re=c.re;}
+    public Value(Value c) { type = c.type; d =c.d; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;}
 
     public Value(Type t, Object v) {
         if (t == Type.doubleType) {
