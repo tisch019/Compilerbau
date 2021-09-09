@@ -2,14 +2,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class Lexer {
+    Logger logger = Logger.getLogger(Lexer.class.getName());
     ArrayList<Integer> buffer = new ArrayList<>();
     int marked = -1;
     int current;
     int start;
     boolean ended = false;
     InputStream input = null;
+
+    public Lexer(String name) throws IOException {
+        logger.setLevel(Level.INFO);
+        input = new FileInputStream(name);
+        logger.info("Lexer created");
+    }
 
     public void close() throws IOException {
         if (input != null)
@@ -200,6 +209,7 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 5");
                     }
                     break;
                 case 6:
@@ -210,6 +220,7 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 6");
                     }
                     break;
                 case 7:
@@ -228,6 +239,7 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 8");
                     }
                     break;
                 case 9:
@@ -247,6 +259,7 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 10");
                     }
                     break;
                 // Case 12 - 13 ARRAYSTART MAPSTART
@@ -285,6 +298,7 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 15");
                     }
                     break;
                 case 16:
@@ -376,9 +390,5 @@ public class Lexer {
             erg += (char) (int) buffer.get(start);
         reset();
         return erg;
-    }
-
-    public Lexer(String name) throws IOException {
-        input = new FileInputStream(name);
     }
 }
