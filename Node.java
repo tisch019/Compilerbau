@@ -584,6 +584,7 @@ class StateNode extends ExprNode{
 class RangeNode extends ExprNode {
     Type stateOfNode;
     ExprNode newStateNode;
+    Token content;
 
     public RangeNode(ExprNode node, Type targetType, Token content) {
         super(node.start, node.end);
@@ -593,7 +594,7 @@ class RangeNode extends ExprNode {
 
     @Override
     public String toString(String indent) {
-        return "RangeNode";
+        return indent+"Range "+ content.content;
     }
 
     @Override
@@ -601,10 +602,7 @@ class RangeNode extends ExprNode {
         return stateOfNode;
     }
     public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.d = erg.i;
-        return erg;
+        
     }
 }
 
