@@ -101,7 +101,7 @@ class CUNode extends Node {
             case("range"):
                 wert.type = Type.rangeType;
             case("transition"):
-                wert.type = Type.transitionTape;
+                wert.type = Type.transitionType;
             case("finiteAutomata"):
                 wert.type = Type.finiteAutomataType;
             case("regularExpression"):
@@ -152,7 +152,7 @@ class PrintNode extends StmntNode {
         else if (ausg.type == Type.intType) System.out.println(ausg.i);
         else if (ausg.type == Type.stateType) System.out.println(ausg.s);
         else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
-        else if (ausg.type == Type.transitionTape) System.out.println(ausg.t);
+        else if (ausg.type == Type.transitionType) System.out.println(ausg.t);
         else if (ausg.type == Type.finiteAutomataType) System.out.println(ausg.fa);
         else if (ausg.type == Type.regularExpressionType) System.out.println(ausg.re);
         else System.out.println("unknown type");
@@ -582,27 +582,30 @@ class StateNode extends ExprNode{
 
 
 class RangeNode extends ExprNode {
-    Type stateOfNode;
-    ExprNode newStateNode;
-    Token content;
+    Token charA = null;
+    Token charB = null;
 
-    public RangeNode(ExprNode node, Type targetType, Token content) {
-        super(node.start, node.end);
-        newStateNode = node;
-        type = stateOfNode = targetType;
+    public RangeNode(Token contentA, Token contentB) {
+        super(contentA, contentB);
+        this.charA = contentA;
+        this.charB = contentB;
     }
 
     @Override
     public String toString(String indent) {
-        return indent+"Range "+ content.content;
+        return indent+"Range from"+ charA.content + "-" + charB.content;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return stateOfNode;
+        return type = Type.rangeType;
     }
     public Value runExpr() {
-        
+        Value erg;
+        if(charA == charB) 
+        {
+
+        }
     }
 }
 

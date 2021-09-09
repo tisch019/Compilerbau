@@ -24,7 +24,13 @@ public class Value {
     public Value(boolean b) { type = Type.booleanType; this.b=b; };
     public Value(int i) { type = Type.intType; this.i=i; };
     public Value(double d) { type = Type.doubleType; this.d=d; };
-    public Value(Value c) { type = c.type; d =c.d; i=c.i; b=c.b; }
+    public Value(State s) { type = Type.stateType; this.s = s;}
+    public Value(Range r) { type = Type.rangeType; this.r = r;}
+    public Value(Transition t) { type = Type.transitionType; this.t = t;}
+    public Value(FiniteAutomata fa) { type = Type.finiteAutomataType; this.fa = fa;}
+    public Value(RegularExpression re) { type = Type.regularExpressionType; this.re = re;}
+    public Value(Value c) { type = c.type; d =c.d; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; fa=c.fa; re=c.re;}
+
     public Value(Type t, Object v) {
         if (t == Type.doubleType) {
             d = (Double) v;

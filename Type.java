@@ -10,7 +10,7 @@ public class Type {
     public static Type errorType = new Type("error");
     public static Type stateType = new Type("state");
     public static Type rangeType = new Type("range");
-    public static Type transitionTape = new Type("transition");
+    public static Type transitionType = new Type("transition");
     public static Type finiteAutomataType = new Type("finiteAutomata");
     public static Type regularExpressionType = new Type("regularExpression");
 
@@ -32,7 +32,7 @@ public class Type {
             case("range"):
                 return rangeType;
             case("transition"):
-                return transitionTape;
+                return transitionType;
             case("finiteAutomata"):
                 return finiteAutomataType;
             case("regularExpression"):
@@ -56,7 +56,7 @@ public class Type {
         else if (t1==intType && t2==doubleType) return doubleType;
         else if (t1==finiteAutomataType && t2==regularExpressionType) return finiteAutomataType; //fa + ra = fa
         else if (t1==regularExpressionType && t2==finiteAutomataType) return finiteAutomataType; //ra + fa = fa
-        else if (t1==finiteAutomataType && t2==transitionTape) return finiteAutomataType; // fa + transition = fa
+        else if (t1==finiteAutomataType && t2==transitionType) return finiteAutomataType; // fa + transition = fa
         else return errorType;
     }
 }
