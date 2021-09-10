@@ -14,6 +14,8 @@ public class Type {
     public static Type epsilonTransitionType = new Type("epsilonTransition");
     public static Type finiteAutomataType = new Type("finiteAutomata");
     public static Type regularExpressionType = new Type("regularExpression");
+    public static Type setType = new Type("set");
+    public static Type mapType = new Type("map");
 
     public String toString() {
         return name;
@@ -40,6 +42,10 @@ public class Type {
                 return finiteAutomataType;
             case("regularExpression"):
                 return regularExpressionType;
+            case("set"):
+                return setType;
+            case("map"):
+                return mapType;
             default:
                 return errorType;
         }

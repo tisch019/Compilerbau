@@ -1,3 +1,7 @@
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -707,8 +711,90 @@ class RegularExpressionNode extends ExprNode {
         }
         return null;
     }
-
-
-
     
+}
+
+class SetNode extends ExprNode {
+    Token type;
+    List<Token> list;
+
+    public SetNode(Token type, List<Token> list){
+        super(type, type);
+        this.type = type;
+        this.list = list;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "Set<" + type.kind.toString() + "> = new HashSet<" + type.kind.toString() + ">;" ;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        for (Token i : list) {
+            if(i.kind.toString() != type.kind.toString())
+            {
+                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ i.kind.toString() + " vs " + type.kind.toString() + " Type of Set)"));
+                return Type.errorType;
+            }
+        }
+        return Type.setType;
+    }
+
+    @Override
+    public Value runExpr() {
+        //Type t = Type.getType(type.content);
+        //Value typeValue = new Value(t, (Object) type.content);
+        Set<Value> verified = new HashSet<Value>();
+        Value erg = new Value(verified);
+
+      return erg;
+    }
+
+}
+
+class MapNode extends ExprNode {
+    Token type;
+    List<Token> keyTypes;
+    List<Token> valueTypes;
+
+    public MapNode(Token type, List<Token> keyTypes, List<Token> valueTypes){
+        super(type, type);
+        this.type = type;
+        this.keyTypes = keyTypes;
+        this.valueTypes = valueTypes;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "Map<" + keyTypes.get(0).kind.toString() + "," + valueTypes.get(0).kind.toString() + ">;" ;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        for (Token i : keyTypes) {
+            if(i.kind.toString() != type.kind.toString())
+            {
+                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes (Token: "+ i.kind.toString() + " vs " + type.kind.toString() + " Type of Map)"));
+                return Type.errorType;
+            }
+        }
+
+        for (Token i : valueTypes) {
+            if(i.kind.toString() != type.kind.toString())
+            {
+                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes (Token: "+ i.kind.toString() + " vs " + type.kind.toString() + " Type of Map)"));
+                return Type.errorType;
+            }
+        }
+        return Type.mapType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Map<Value, Value> verified = new HashMap<Value, Value>();
+        Value erg = new Value(verified);    
+        return erg;
+    }
+
 }
