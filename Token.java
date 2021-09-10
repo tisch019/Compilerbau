@@ -9,6 +9,8 @@ public class Token
         BLOCKEND,       // }
         BRACKETSTART,   // (
         BRACKETEND,     // )
+        SQUAREBRACKETOPEN,  //[
+        SQUAREBRACKETCLOSE, //]
         SEM,            // ;
         COMMA,          // ,
         SETTO,          // Zuweisung, einzelnes =
@@ -21,7 +23,6 @@ public class Token
                     //Schlüsselworte
         KEYSTRING,      // String Schlüsselwort
         KEYCHAR,        // Char Schlüsselwort
-        KEYDOUBLE,      // Double Schlüsselwort
         KEYINT,         // Int Schlüsselwort
         KEYBOOL,        // Bool Schlüsselwort
         KEYRANGE,       // Schlüsselwort Range
@@ -33,15 +34,9 @@ public class Token
         KEYMAP,         // Schlüsselwort Map
                     //Values
         STRING,         // String Value
-        CHAR,           // Char Value
-        DOUBLE,         // Double Value
+        CHAR,           // Char Value 'a'
         INT,            // Int Value
         BOOL,           // Bool Value
-        RANGESTART,     // [
-        RANGESINGLE,    // character single (z.B. a)
-        RANGEBRSTART,   // Character mit 'a'
-        RANGEBREND,     // character z (Bsp.: a - z)
-        RANGEEND,       // ]
         STATE,          // $"..."
         STATEACC,       // $"..."^1
         TRANSSTART,     // --
