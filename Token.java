@@ -20,6 +20,7 @@ public class Token
         PRINT,          // Print Befehl zur Ausgabe
                     //Schlüsselworte
         KEYSTRING,      // String Schlüsselwort
+        KEYCHAR,        // Char Schlüsselwort
         KEYDOUBLE,      // Double Schlüsselwort
         KEYINT,         // Int Schlüsselwort
         KEYBOOL,        // Bool Schlüsselwort
@@ -32,6 +33,7 @@ public class Token
         KEYMAP,         // Schlüsselwort Map
                     //Values
         STRING,         // String Value
+        CHAR,           // Char Value
         DOUBLE,         // Double Value
         INT,            // Int Value
         BOOL,           // Bool Value
@@ -50,10 +52,9 @@ public class Token
         RA,             // /.../
         SET,            // {...} von BLOCKSTART zu unterscheiden
         TYPE,           // Bsp. Map<type1,type2> braucht Type Token
-        MAPSTART,       // [["
-        MAPEND,         // ]]
-        ARRAYSTART,     // [[
-        ARRAYEND,       // ]]
+        MAPDELI,        // :
+        MAPARRAYSTART,  // [[
+        MAPARRAYEND,    // ]]
         ERROR,          // Lexer Error
         WS,             // whitespace ' ', \t, \n, \r
         EOF,            // End des Streams / Quelldatei
