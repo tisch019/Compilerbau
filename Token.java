@@ -30,8 +30,8 @@ public class Token
         KEYRA,          // Schlüsselwort RA
         KEYSET,         // Schlüsselwort Set
         KEYMAP,         // Schlüsselwort Map
-        STRING,         // String Value
                     //Values
+        STRING,         // String Value
         DOUBLE,         // Double Value
         INT,            // Int Value
         BOOL,           // Bool Value
