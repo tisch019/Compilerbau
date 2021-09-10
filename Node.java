@@ -44,13 +44,6 @@ abstract class StmntNode extends Node {
     }
 }
 
-
-
-
-
-
-
-
 //Klassen aus Abstract-Klassen erstellt
 class CUNode extends Node {
     List<Node> declAndStmnts =  new LinkedList<>();
@@ -120,19 +113,6 @@ class CUNode extends Node {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class PrintNode extends StmntNode {
     ExprNode expr;
 
@@ -162,8 +142,6 @@ class PrintNode extends StmntNode {
     }
 }
 
-
-
 class EmptyStmntNode extends StmntNode {
     public EmptyStmntNode(Token start) {
         super(start,start);
@@ -174,9 +152,6 @@ class EmptyStmntNode extends StmntNode {
 
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) { }
 }
-
-
-
 
 class IfNode extends StmntNode {
     ExprNode expr;
@@ -277,26 +252,6 @@ class ExprStmntNode extends StmntNode {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class NumberINode extends NumberNode {
     public NumberINode(Token content) {
         super(content);
@@ -330,20 +285,6 @@ class NumberDNode extends NumberNode {
         return erg;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class IdentifierNode extends ExprNode {
     Token content;
@@ -560,6 +501,7 @@ class StateNode extends ExprNode{
     }
 }
 
+
 //RangeNode mit zwei Charakter-Token
 //Unterscheidung in der runExpr, ob die beiden Charakter-Token gleich sind oder nicht
 //Somit wird die Range unterschieden
@@ -593,7 +535,6 @@ class RangeNode extends ExprNode {
         return erg;
     }
 }
-
 
 
 //Transitionnode beinhaltet zwei Konstruktoren:
@@ -674,8 +615,6 @@ class FiniteAutomataNode extends ExprNode{
     }
 
 }
-
-
 
 
 class RegularExpressionNode extends ExprNode {
