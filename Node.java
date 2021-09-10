@@ -746,6 +746,11 @@ class SetNode extends ExprNode {
         //Type t = Type.getType(type.content);
         //Value typeValue = new Value(t, (Object) type.content);
         Set<Value> verified = new HashSet<Value>();
+        for(Token i : list) {
+            if(i.kind.toString() == "STRING") {
+                Value zw = new Value()
+            }
+        }
         Value erg = new Value(verified);
 
       return erg;
