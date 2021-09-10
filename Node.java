@@ -517,7 +517,8 @@ class RangeNode extends ExprNode{
             {
                 erg.r.add(pair.getL().runExpr().c);
             } else {
-                erg.r.add(pair.getL().runExpr().c);
+                erg.r.add(pair.getL().runExpr().c, 
+                            pair.getR().runExpr().c);
             }
         }
         return erg;
