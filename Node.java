@@ -79,14 +79,12 @@ class CUNode extends Node {
         this.typ = typ;
         this.name = name;
         wert = new Value();
-        if (typ.content.equals("int")) wert.type = Type.intType;
-        else wert.type = Type.doubleType;
         switch(typ.content)
         {
             case("int"):
                 wert.type = Type.intType;
             case("double"):
-                wert.type = Type.doubleType;
+                wert.type = Type.charType;
             case("boolean"):
                 wert.type = Type.booleanType;
             case("state"):
@@ -130,7 +128,7 @@ class PrintNode extends StmntNode {
     public void run() {
         Value ausg = expr.runExpr();
         if (ausg.type == Type.booleanType) System.out.println(ausg.b);
-        else if (ausg.type == Type.doubleType) System.out.println(ausg.d);
+        else if (ausg.type == Type.charType) System.out.println(ausg.c);
         else if (ausg.type == Type.intType) System.out.println(ausg.i);
         else if (ausg.type == Type.stateType) System.out.println(ausg.s);
         else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
@@ -269,23 +267,6 @@ class NumberINode extends NumberNode {
     }
 }
 
-class NumberDNode extends NumberNode {
-    public NumberDNode(Token content) {
-        super(content);
-    }
-    public String toString(String indent) {
-        return indent+"Double: "+content.content;
-    }
-    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return type = Type.doubleType;
-    }
-    public Value runExpr() {
-        Value erg = new Value(); erg.type = Type.doubleType;
-        erg.d = Double.parseDouble(content.content);
-        return erg;
-    }
-}
-
 class IdentifierNode extends ExprNode {
     Token content;
     DeclNode dn;
@@ -356,14 +337,12 @@ class BinOpNode extends ExprNode {
         if (op.kind == Token.Type.COMP) {
             erg.type = Type.booleanType;
             switch (op.content) {
-                case "<": if (type == Type.doubleType)
-                    erg.b = leftV.d < rightV.d;
-                else if (type == Type.intType)
+                case "<":
+                if (type == Type.intType)
                     erg.b = leftV.i < rightV.i;
                     break;
-                case ">": if (type == Type.doubleType)
-                    erg.b = leftV.d > rightV.d;
-                else if (type == Type.intType)
+                case ">":
+                if (type == Type.intType)
                     erg.b = leftV.i > rightV.i;
                     break;
             }
@@ -371,14 +350,12 @@ class BinOpNode extends ExprNode {
         else if (op.kind == Token.Type.POP) {
             erg.type = type;
             switch (op.content) {
-                case "+": if (type == Type.doubleType)
-                    erg.d = leftV.d + rightV.d;
-                else if (type == Type.intType)
+                case "+":
+                if (type == Type.intType)
                     erg.i = leftV.i + rightV.i;
                     break;
-                case "-": if (type == Type.doubleType)
-                    erg.d = leftV.d - rightV.d;
-                else if (type == Type.intType)
+                case "-":
+                if (type == Type.intType)
                     erg.i = leftV.i - rightV.i;
                     break;
             }
@@ -386,18 +363,17 @@ class BinOpNode extends ExprNode {
         else if (op.kind == Token.Type.LOP) {
             erg.type = type;
             switch (op.content) {
-                case "*": if (type == Type.doubleType)
-                    erg.d = leftV.d * rightV.d;
-                else if (type == Type.intType)
+                case "*":
+                if (type == Type.intType)
                     erg.i = leftV.i * rightV.i;
                     break;
-                case "/": if (type == Type.doubleType)
-                    erg.d = leftV.d / rightV.d;
+                case "/": if (type == Type.intType)
+                    erg.i = leftV.i / rightV.i;
                 else if (type == Type.intType)
                     erg.i = leftV.i / rightV.i;
                     break;
-                case "%": if (type == Type.doubleType)
-                    erg.d = leftV.d % rightV.d;
+                case "%": if (type == Type.intType)
+                    erg.i = leftV.i % rightV.i;
                 else if (type == Type.intType)
                     erg.i = leftV.i % rightV.i;
                     break;
@@ -433,9 +409,7 @@ class UnOpNode extends ExprNode {
         Value erg = leftV.copy();
         switch (op.content) {
             case "-":
-                if (erg.type == Type.doubleType)
-                    erg.d = - leftV.d ;
-                else if (erg.type == Type.intType)
+                if (erg.type == Type.intType)
                     erg.i = -leftV.i;
                 break;
             case "!": if (erg.type == Type.booleanType)
@@ -467,7 +441,7 @@ class CastNode extends ExprNode {
     public Value runExpr() {
         Value erg = castNode.runExpr().copy();
         erg.type = castTo;
-        erg.d = erg.i;
+        //TODO
         return erg;
     }
 }
@@ -503,40 +477,52 @@ class StateNode extends ExprNode{
 }
 
 
-//RangeNode mit zwei Charakter-Token
-//Unterscheidung in der runExpr, ob die beiden Charakter-Token gleich sind oder nicht
-//Somit wird die Range unterschieden
-class RangeNode extends ExprNode {
-    Token charA = null;
-    Token charB = null;
+class RangeNode extends ExprNode{
+    List<Pair<ExprNode,ExprNode>> entries;
 
-    public RangeNode(Token contentA, Token contentB) {
-        super(contentA, contentB);
-        this.charA = contentA;
-        this.charB = contentB;
+    public RangeNode(List<Pair<ExprNode,ExprNode>> entries) {
+        super(entries.get(0).getL().start,
+            ((entries.get(entries.size()-1).getR())!=null) ? entries.get(entries.size()-1).getR().end : entries.get(0).getL().end);
+        this.entries = entries;
     }
 
     @Override
     public String toString(String indent) {
-        return indent+"Range from"+ charA.content + "-" + charB.content;
+        String ret = indent+"Range: ";
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if(pair.getR() == null)
+                ret += "'"+pair.getL()+"' ";
+            else
+                ret += "'"+pair.getL()+"'-'"+pair.getR()+"' ";
+        }
+        return  ret;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        //Alle Pairs müssen Char sein
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if (pair.getL().semantischeAnalyseExpr(tabelle, errors) != Type.charType)
+                errors.add(new SemanticError(start,end,"range-expressions must be chars"));
+            if(pair.getR() != null)
+                if(pair.getR().semantischeAnalyseExpr(tabelle, errors) != Type.charType)
+                    errors.add(new SemanticError(start,end,"range-expressions must be chars"));
+        }
         return type = Type.rangeType;
     }
     public Value runExpr() {
-        Value erg;
-        if(charA == charB) 
-        {
-            erg = new Value(new Range(charA.content.charAt(0)));
-        } else {
-            erg = new Value(new Range(charA.content.charAt(0), charB.content.charAt(0)));
+        Value erg = new Value(new Range());
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if(pair.getR() == null) 
+            {
+                erg.r.add(pair.getL().runExpr().c);
+            } else {
+                erg.r.add(pair.getL().runExpr().c);
+            }
         }
         return erg;
     }
 }
-
 
 //Transitionnode beinhaltet zwei Konstruktoren:
 //Normaler Übergang: StartState -- [Range] --> EndState
