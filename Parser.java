@@ -403,33 +403,50 @@ public class Parser {
             filter.matchToken();
         }
         else if (filter.getToken().kind == Token.Type.SQUAREBRACKETOPEN){
+            //Range
             filter.matchToken();
-            //Range || Map || Array ?
-            if(filter.getToken().kind == Token.Type.SQUAREBRACKETOPEN){
-                filter.matchToken();
-                List<Token> entries = new ArrayList<Token>();
-                //Map || Array ?
-                while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
-                    //TODO
+            Pair<ExprNode,ExprNode> range;
+            List<Pair<ExprNode,ExprNode>> entries = new ArrayList<Pair<ExprNode,ExprNode>>();
+            while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
+                if(filter.getToken(1).kind == Token.Type.POP){ // -
+                    ExprNode l = expr(synco);
+                    filter.matchToken(); // -
+                    ExprNode r = expr(synco);
+                    range = new Pair<ExprNode,ExprNode>(l,r);
+                }else{
+                    range = new Pair<ExprNode,ExprNode>(expr(synco),null);
                 }
-            }else{ // Range
-                Pair<ExprNode,ExprNode> range;
-                List<Pair<ExprNode,ExprNode>> entries = new ArrayList<Pair<ExprNode,ExprNode>>();
-                while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
-                    if(filter.getToken(1).kind == Token.Type.POP){ // -
-                        ExprNode l = expr(synco);
-                        filter.matchToken(); // -
-                        ExprNode r = expr(synco);
-                        range = new Pair<ExprNode,ExprNode>(l,r);
-                    }else{
-                        range = new Pair<ExprNode,ExprNode>(expr(synco),null);
-                    }
-                    entries.add(range);
-                    if(filter.getToken().kind == Token.Type.COMMA)
-                        filter.matchToken();
+                entries.add(range);
+                if(filter.getToken().kind == Token.Type.COMMA)
+                    filter.matchToken();
+            }
+            filter.matchToken(); // ]
+            res = new RangeNode(entries);
+        }
+        else if(filter.getToken().kind == Token.Type.MAPARRAYSTART){
+            if(filter.getToken(1).kind == Token.Type.MAPDELI){
+                //Map Element:Value
+                List<Pair<ExprNode,ExprNode>> elements = new ArrayList<Pair<ExprNode,ExprNode>>();
+                Pair<ExprNode,ExprNode> pair;
+                while(filter.getToken().kind != Token.Type.MAPARRAYEND){
+                    ExprNode l = expr(synco);
+                    filter.matchToken(Token.Type.MAPDELI, synco);
+                    ExprNode r = expr(synco);
+                    pair = new Pair<ExprNode,ExprNode>(l,r);
+                    elements.add(pair);
                 }
-                filter.matchToken(); // ]
-                res = new RangeNode(entries);
+                filter.matchToken(); // ]]
+                res = new MapNode(elements);
+            }else{
+                //Array
+                List<ExprNode> elements = new ArrayList<ExprNode>();
+                while(filter.getToken().kind != Token.Type.MAPARRAYEND){
+                    elements.add(expr(synco));
+                    if(filter.getToken().kind != Token.Type.MAPARRAYEND)
+                        filter.matchToken(Token.Type.COMMA, synco);
+                }
+                filter.matchToken(); // ]]
+                res = new ArrayNode(elements);
             }
         }
         else if (filter.getToken().kind == Token.Type.STATE){
