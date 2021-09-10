@@ -71,12 +71,12 @@ public class Lexer {
                             break;
                         case '[':
                             mark();
-                            t.kind = Token.Type.RANGESTART;
+                            t.kind = Token.Type.SQUAREBRACKETOPEN;
                             state = 12;
                             break;
                         case ']':
                             mark();
-                            t.kind = Token.Type.RANGEEND;
+                            t.kind = Token.Type.SQUAREBRACKETCLOSE;
                             state = 14;
                             break;
                         case ';':
@@ -144,6 +144,11 @@ public class Lexer {
                             t.kind = Token.Type.STRING;
                             state = 21;
                             break;
+                        case '\'':
+                            mark();
+                            t.kind = Token.Type.CHAR;
+                            state = 22;
+                            break;
                         case -1:
                             mark();
                             t.kind = Token.Type.EOF;
@@ -192,9 +197,6 @@ public class Lexer {
                 case 4:
                     if (isDigit(nextChar)) {
                         mark();
-                    }
-                    else if (nextChar == '.') {
-                        state = 15; // Check digits
                     }
                     else {
                         state = 100;
@@ -262,19 +264,11 @@ public class Lexer {
                         logger.info("Error in Lexer at case 10");
                     }
                     break;
-                // Case 12 - 13 ARRAYSTART MAPSTART
+                // Case 12 ARRAYSTART MAPSTART
                 case 12:
                     if (nextChar == '[') {
                         mark();
-                        t.kind = Token.Type.ARRAYSTART;
-                        state = 13;
-                    } else {
-                        state = 100;
-                    }
-                    break;
-                case 13:
-                    if (nextChar == '"') {
-                        t.kind = Token.Type.MAPSTART;
+                        t.kind = Token.Type.MAPARRAYSTART;
                     }
                     state = 100;
                     break;
@@ -282,31 +276,9 @@ public class Lexer {
                 case 14:
                     if (nextChar == ']') {
                         mark();
-                        t.kind = Token.Type.TRANSEND; //MAPEND oder ARRAYEND Wie unterscheiden?
-                        state = 10;
-                    } else {
-                        state = 100;
+                        t.kind = Token.Type.MAPARRAYEND;
                     }
-                    break;
-                // Case 15 -16 DOUBLE
-                case 15:
-                    if (isDigit(nextChar)) {
-                        mark();
-                        t.kind = Token.Type.DOUBLE;
-                        state = 16;
-                    } else {
-                        mark();
-                        t.kind = Token.Type.ERROR;
-                        state = 100;
-                        logger.info("Error in Lexer at case 15");
-                    }
-                    break;
-                case 16:
-                    if (isDigit(nextChar)) {
-                        mark();
-                    } else {
-                        state = 100;
-                    }
+                    state = 100;
                     break;
                 // Case 17 - 19 TRANS
                 case 17:
@@ -353,6 +325,27 @@ public class Lexer {
                         state = 100;
                     } else {
                         mark();
+                    }
+                    break;
+                // Case 22 CHAR
+                case 22:
+                    if (isIdentChar(nextChar)) {
+                        mark();
+                        state = 23;
+                    } else {
+                        mark();
+                        t.kind = Token.Type.ERROR;
+                        state = 100;
+                    }
+                    break;
+                case 23:
+                    if (nextChar == '\'') {
+                        mark();
+                        state = 100;
+                    } else {
+                        mark();
+                        t.kind = Token.Type.ERROR;
+                        state = 100;
                     }
                     break;
             }
