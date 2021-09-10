@@ -14,46 +14,48 @@ public class Token
         SETTO,          // Zuweisung, einzelnes =
         COMP,           // Vergleich ==, !=, >= , <=
         IDENTIFIER,     // Folge an Characters
-        KEYSTRING,      // String Schlüsselwort
-        STRING,         // String Value
-        KEYDOUBLE,      // Double Schlüsselwort
-        DOUBLE,         // Double Value
-        KEYINT,         // Int Schlüsselwort
-        INT,            // Int Value
-        KEYBOOL,        // Bool Schlüsselwort
-        BOOL,           // Bool Value
         IFSTART,        // if(
         ELSE,           // else
         WHILE,          // while
-        ERROR,          // Lexer Error
-        WS,             // whitespace ' ', \t, \n, \r
+        PRINT,          // Print Befehl zur Ausgabe
+                    //Schlüsselworte
+        KEYSTRING,      // String Schlüsselwort
+        KEYDOUBLE,      // Double Schlüsselwort
+        KEYINT,         // Int Schlüsselwort
+        KEYBOOL,        // Bool Schlüsselwort
         KEYRANGE,       // Schlüsselwort Range
+        KEYSTATE,       // Schlüsselwort State
+        KEYTRANSITION,  // Schlüsselwort Transition
+        KEYFA,          // Schlüsselwort FA
+        KEYRA,          // Schlüsselwort RA
+        KEYSET,         // Schlüsselwort Set
+        KEYMAP,         // Schlüsselwort Map
+        STRING,         // String Value
+                    //Values
+        DOUBLE,         // Double Value
+        INT,            // Int Value
+        BOOL,           // Bool Value
         RANGESTART,     // [
         RANGESINGLE,    // character single (z.B. a)
         RANGEBRSTART,   // Character mit 'a'
         RANGEBREND,     // character z (Bsp.: a - z)
         RANGEEND,       // ]
-        KEYSTATE,       // Schlüsselwort State
         STATE,          // $"..."
         STATEACC,       // $"..."^1
-        KEYTRANSITION,  // Schlüsselwort Transition
         TRANSSTART,     // --
         TRANSEND,       // -->
         TRANSEPSI,      // --->
-        KEYFA,          // Schlüsselwort FA
         FASTART,        // <
         FAEND,          // >
-        KEYRA,          // Schlüsselwort RA
         RA,             // /.../
-        KEYSET,         // Schlüsselwort Set
         SET,            // {...} von BLOCKSTART zu unterscheiden
-        KEYMAP,         // Schlüsselwort Map
         TYPE,           // Bsp. Map<type1,type2> braucht Type Token
         MAPSTART,       // [["
         MAPEND,         // ]]
         ARRAYSTART,     // [[
         ARRAYEND,       // ]]
-        PRINT,          // Print Befehl zur Ausgabe
+        ERROR,          // Lexer Error
+        WS,             // whitespace ' ', \t, \n, \r
         EOF,            // End des Streams / Quelldatei
 
         //Token für Reguläre Ausdrücke
