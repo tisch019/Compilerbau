@@ -7,6 +7,8 @@ import Bibliothek.*;
 
 public class Value {
     Type type;
+    char c;
+    String stg;
     boolean b;
     int i;
     double d;
@@ -16,8 +18,8 @@ public class Value {
     EpsilonTransition et;
     FiniteAutomata fa;
     RegularExpression re;
-    Set<Value> st;
-    Map<Value, Value> mp;
+    Set<Node> st;
+    Map<Node, Node> mp;
 
     public Value() {};
 
@@ -29,6 +31,8 @@ public class Value {
         return erg;
     }
 
+    public Value(String stg){ type = Type.stringType; this.stg=stg;};
+    public Value(char c){ type = Type.charType; this.c=c;};
     public Value(boolean b) { type = Type.booleanType; this.b=b; };
     public Value(int i) { type = Type.intType; this.i=i; };
     public Value(double d) { type = Type.doubleType; this.d=d; };
@@ -38,12 +42,14 @@ public class Value {
     public Value(EpsilonTransition et) { type = Type.epsilonTransitionType; this.et = et;}
     public Value(FiniteAutomata fa) { type = Type.finiteAutomataType; this.fa = fa;}
     public Value(RegularExpression re) { type = Type.regularExpressionType; this.re = re;}
-    public Value(Set<Value> st) { type = Type.setType; this.st = st;}
-    public Value(Map<Value,Value> mp) { type = Type.setType; this.mp = mp;}
+    public Value(Set<Node> st) { type = Type.setType; this.st = st;}
+    public Value(Map<Node,Node> mp) { type = Type.setType; this.mp = mp;}
     public Value(Value c) { type = c.type; d =c.d; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re; st=c.st; mp=c.mp;}
 
     public Value(Type x, Object v) {
         if (x == Type.doubleType) d = (Double) v;
+        else if(x == Type.charType) c = (char) v;
+        else if(x == Type.stringType) stg = (String) v;
         else if(x == Type.booleanType) b = (Boolean) v;
         else if(x == Type.intType) i = (Integer) v;
         else if(x == Type.stateType) s = (State) v;

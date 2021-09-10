@@ -535,6 +535,66 @@ class CastNode extends ExprNode {
     }
 }
 
+class CharNode extends ExprNode {
+    Token content;
+
+    public CharNode(Token content) {
+        super(content, content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"Char: "+ content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.charType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.charType;
+        erg.c = content.content.charAt(0);
+        return erg;
+    }
+}
+
+class StringNode extends ExprNode {
+    Token content;
+
+    public StringNode(Token content) {
+        super(content, content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"String: "+ content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.stringType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.stringType;
+        erg.stg = content.content;
+        return erg;
+    }
+}
+
+class BoolNode extends ExprNode {
+    Token content;
+
+    public BoolNode(Token content) {
+        super(content, content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"Boolean: "+ content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.booleanType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.booleanType;
+        erg.b = Boolean.parseBoolean(content.content);
+        return erg;
+    }
+}
+
 
 //StateNode für den endlichen Automaten
 //In der runExpr wird mit einem Boolean-Flag geprüft, 
@@ -743,15 +803,15 @@ class SetNode extends ExprNode {
 
     @Override
     public Value runExpr() {
-        //Type t = Type.getType(type.content);
-        //Value typeValue = new Value(t, (Object) type.content);
         Set<Value> verified = new HashSet<Value>();
         for(Token i : list) {
             if(i.kind.toString() == "STRING") {
-                Value zw = new Value()
+                Value zw = new Value(i.content);
+                StringNode stg = new StringNode(i);
+                verified.add(zw);
             }
         }
-        Value erg = new Value(verified);
+        //Value erg = new Value(verified);
 
       return erg;
     }

@@ -4,6 +4,8 @@ public class Type {
         this.name = name;
     }
 
+    public static Type charType = new Type("char");
+    public static Type stringType = new Type("string");
     public static Type doubleType = new Type("double");
     public static Type intType = new Type("int");
     public static Type booleanType = new Type("boolean");
@@ -24,6 +26,10 @@ public class Type {
     public static Type getType(String name) {
         switch(name)
         {
+            case("char"):
+                return charType;
+            case("string"):
+                return stringType;
             case("double"):
                 return doubleType;
             case("int"):
