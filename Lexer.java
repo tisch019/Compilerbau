@@ -2,14 +2,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class Lexer {
+    Logger logger = Logger.getLogger(Lexer.class.getName());
     ArrayList<Integer> buffer = new ArrayList<>();
     int marked = -1;
     int current;
     int start;
     boolean ended = false;
     InputStream input = null;
+
+    public Lexer(String name) throws IOException {
+        logger.setLevel(Level.INFO);
+        input = new FileInputStream(name);
+        logger.info("Lexer created");
+    }
 
     public void close() throws IOException {
         if (input != null)
@@ -47,7 +56,7 @@ public class Lexer {
                             break;
                         case ')':
                             mark();
-                            t.kind = Token.Type.BRACKETSTART;
+                            t.kind = Token.Type.BRACKETEND;
                             state = 100;
                             break;
                         case '{':
@@ -58,7 +67,7 @@ public class Lexer {
                         case '}':
                             mark();
                             t.kind = Token.Type.BLOCKEND;
-                            state = 100;
+                            state = 20;
                             break;
                         case '[':
                             mark();
@@ -73,6 +82,11 @@ public class Lexer {
                         case ';':
                             mark();
                             t.kind = Token.Type.SEM;
+                            state = 100;
+                            break;
+                        case ',':
+                            mark();
+                            t.kind = Token.Type.COMMA;
                             state = 100;
                             break;
                         case ' ':
@@ -91,7 +105,7 @@ public class Lexer {
                         case '-':
                             mark();
                             t.kind = Token.Type.POP;
-                            state = 9;
+                            state = 17;
                             break;
                         case '%':
                         case '*':
@@ -105,9 +119,17 @@ public class Lexer {
                             t.kind = Token.Type.STATE;
                             state = 5;
                             break;
-                        case '<':
-                        case '>':
                         case '!':
+                            mark();
+                            t.kind = Token.Type.BOOLNEG;
+                            state = 1;
+                            break;
+                        case '<':
+                            mark();
+                            t.kind = Token.Type.COMP;
+                            state = 1;
+                            break;
+                        case '>':
                             mark();
                             t.kind = Token.Type.COMP;
                             state = 1;
@@ -116,6 +138,11 @@ public class Lexer {
                             mark();
                             t.kind = Token.Type.SETTO;
                             state = 2;
+                            break;
+                        case '"':
+                            mark();
+                            t.kind = Token.Type.STRING;
+                            state = 21;
                             break;
                         case -1:
                             mark();
@@ -137,11 +164,15 @@ public class Lexer {
                     break;
                 // Case 1 COMPARE
                 case 1:
-                    if (nextChar == '=')
+                    if (nextChar == '=') {
                         mark();
+                        t.kind = Token.Type.COMP;
+                    } else if (nextChar == '$') {
+                        t.kind = Token.Type.FASTART;
+                    }
                     state = 100;
                     break;
-                // Case 2 COMPARE
+                // Case 2 SETTO COMPARE
                 case 2:
                     if (nextChar == '=') {
                         mark();
@@ -151,11 +182,13 @@ public class Lexer {
                     break;
                 // Case 3 IDENTIFIER
                 case 3:
-                    if (isIdentChar(nextChar))
+                    if (isIdentChar(nextChar)) {
                         mark();
-                    else
+                    } else {
                         state = 100;
+                    }
                     break;
+                // Case 4 INT
                 case 4:
                     if (isDigit(nextChar)) {
                         mark();
@@ -167,24 +200,27 @@ public class Lexer {
                         state = 100;
                     }
                     break;
-                // Case 5 - 8 STATE
+                // Case 5 - 10 STATE and STATEACC
                 case 5:
                     if (nextChar == '"') {
                         mark();
-                        state = 8;
+                        state = 6;
                     } else {
+                        mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 5");
                     }
                     break;
                 case 6:
                     if (isIdentChar(nextChar)) {
                         mark();
-                        state = 9;
+                        state = 7;
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 6");
                     }
                     break;
                 case 7:
@@ -192,49 +228,41 @@ public class Lexer {
                         mark();
                     }
                     else {
-                        state = 10;
+                        state = 8;
                     }
                     break;
                 case 8:
                     if (nextChar == '"') {
+                        mark();
+                        state = 9;
+                    } else {
+                        mark();
+                        t.kind = Token.Type.ERROR;
+                        state = 100;
+                        logger.info("Error in Lexer at case 8");
+                    }
+                    break;
+                case 9:
+                    if (nextChar == '^') {
+                        mark();
+                        state = 10;
+                        t.kind = Token.Type.STATEACC;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 10:
+                    if (nextChar == '1') {
                         mark();
                         state = 100;
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 10");
                     }
                     break;
-                case 9:
-                    if (nextChar == '-') {
-                        mark();
-                        t.kind = Token.Type.TRANSSTART;
-                        state = 10;
-                    } else {
-                        mark();
-                        state = 100;
-                    }
-                    break;
-                case 10:
-                    if (nextChar == '>') {
-                        mark();
-                        t.kind = Token.Type.TRANSEND;
-                        state = 100;
-                    } else if (nextChar == '-'){
-                        mark();
-                        state = 11;
-                    } else {
-                        state = 100;
-                    }
-                    break;
-                case 11:
-                    if (nextChar == '>') {
-                        mark();
-                        t.kind = Token.Type.TRANSEPSI;
-                    }
-                    // --- Wird auch als TRANSSTART erkannt
-                    state = 100;
-                    break;
+                // Case 12 - 13 ARRAYSTART MAPSTART
                 case 12:
                     if (nextChar == '[') {
                         mark();
@@ -246,15 +274,15 @@ public class Lexer {
                     break;
                 case 13:
                     if (nextChar == '"') {
-                        mark();
                         t.kind = Token.Type.MAPSTART;
                     }
                     state = 100;
                     break;
+                // Case 14 MAPEND ARRAYEND
                 case 14:
                     if (nextChar == ']') {
                         mark();
-                        t.kind = Token.Type.TRANSEND; //TRANSEND oder ARRAYEND
+                        t.kind = Token.Type.TRANSEND; //MAPEND oder ARRAYEND Wie unterscheiden?
                         state = 10;
                     } else {
                         state = 100;
@@ -270,13 +298,63 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
+                        logger.info("Error in Lexer at case 15");
                     }
+                    break;
                 case 16:
                     if (isDigit(nextChar)) {
                         mark();
                     } else {
                         state = 100;
                     }
+                    break;
+                // Case 17 - 19 TRANS
+                case 17:
+                    if (nextChar == '-') {
+                        mark();
+                        t.kind = Token.Type.TRANSSTART;
+                        state = 18;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 18:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.TRANSEND;
+                        state = 100;
+                    } else if (nextChar == '-'){
+                        mark();
+                        state = 19;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 19:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.TRANSEPSI;
+                    }
+                    // --- Wird auch als TRANSSTART erkannt
+                    state = 100;
+                    break;
+                // Case 20 FAEND
+                case 20:
+                    if (nextChar == '>') {
+                        mark();
+                        t.kind = Token.Type.FAEND;
+                    }
+                    state = 100;
+                    break;
+                // Case 21 STRING
+                case 21:
+                    if (nextChar == '"') {
+                        mark();
+                        state = 100;
+                    } else {
+                        mark();
+                    }
+                    break;
             }
         } while (state != 100);
         if (marked == -1) {
@@ -312,9 +390,5 @@ public class Lexer {
             erg += (char) (int) buffer.get(start);
         reset();
         return erg;
-    }
-
-    public Lexer(String name) throws IOException {
-        input = new FileInputStream(name);
     }
 }
