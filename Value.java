@@ -1,16 +1,24 @@
+
+import java.util.Map;
+import java.util.Set;
+
+
 import Bibliothek.*;
 
 public class Value {
     Type type;
+    char c;
+    String stg;
     boolean b;
     int i;
-    char c;
     State s;
     Range r;
     Transition t;
     EpsilonTransition et;
     FiniteAutomata fa;
     RegularExpression re;
+    Set<Node> st;
+    Map<Node, Node> mp;
 
     public Value() {};
 
@@ -18,16 +26,33 @@ public class Value {
         //TODO
     }
 
+    public Value(String stg){ type = Type.stringType; this.stg=stg;};
+    public Value(char c){ type = Type.charType; this.c=c;};
     public Value(boolean b) { type = Type.booleanType; this.b=b; };
     public Value(int i) { type = Type.intType; this.i=i; };
-    public Value(char c){ type = Type.charType; this.c=c;};
     public Value(State s) { type = Type.stateType; this.s = s;}
     public Value(Range r) { type = Type.rangeType; this.r = r;}
     public Value(Transition t) { type = Type.transitionType; this.t = t;}
     public Value(EpsilonTransition et) { type = Type.epsilonTransitionType; this.et = et;}
     public Value(FiniteAutomata fa) { type = Type.finiteAutomataType; this.fa = fa;}
     public Value(RegularExpression re) { type = Type.regularExpressionType; this.re = re;}
-    public Value(Value c) { type = c.type; this.c =c.c; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;}
+    public Value(Value c) { type = c.type; this.c =c.c; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp;}
+
+    public Value(Set<Node> st) { type = Type.setType; this.st = st;}
+    public Value(Map<Node,Node> mp) { type = Type.setType; this.mp = mp;}
+
+    public Value(Type x, Object v) {
+        if(x == Type.charType) c = (char) v;
+        else if(x == Type.stringType) stg = (String) v;
+        else if(x == Type.booleanType) b = (Boolean) v;
+        else if(x == Type.intType) i = (Integer) v;
+        else if(x == Type.stateType) s = (State) v;
+        else if(x == Type.rangeType) r = (Range) v;
+        else if(x == Type.transitionType) t = (Transition) v;
+        else if(x == Type.epsilonTransitionType) et = (EpsilonTransition) v;
+        else if(x == Type.finiteAutomataType) fa = (FiniteAutomata) v;
+        else re = (RegularExpression) v;
+    }
 
     public Value copy() {
         return new Value(this);

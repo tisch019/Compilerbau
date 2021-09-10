@@ -72,4 +72,5 @@ public class Token
     public String content;
     int index;
     int line, column;
+
 }
