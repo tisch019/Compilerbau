@@ -480,9 +480,10 @@ class StateNode extends ExprNode{
     boolean accept = false;
     Token content;
 
-    public StateNode(Token content){
+    public StateNode(Token content, boolean accept){
         super(content,content);
         this.content = content;
+        this.accept = accept;
     }
     public String toString(String indent){
         return indent+"State "+content.content;
