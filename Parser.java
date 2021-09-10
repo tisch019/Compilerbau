@@ -1,9 +1,12 @@
 import Bibliothek.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.lang.model.util.ElementScanner14;
 
 public class Parser {
     Filter filter;
@@ -196,7 +199,7 @@ public class Parser {
         return new WhileNode(start,expr,stmnt);
     }
 
-        // block = "{" { decl | stmnt } "}"
+    // block = "{" { decl | stmnt } "}"
     // sync: First(decl) + first(stmnt) + "}"
     BlockNode block(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync =  new HashSet<>();
@@ -376,13 +379,72 @@ public class Parser {
         return res;
     }
 
-    // atom = INT |  | IDENTIFIER | ("+"|"-") atom | "(" expr ")"
+    // atom = INT | BOOL | STRING | CHAR | RANGE | STATE | TRANSITION | FA | RA 
+    //       | SET? | MAP? 
+    //       | IDENTIFIER | ("+"|"-") atom | "(" expr ")"
     // no syncs
     ExprNode atom(Set<Token.Type> synco) throws IOException, ParserError {
         ExprNode res = null;
 
         if (filter.getToken().kind == Token.Type.INT) {
             res = new NumberINode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.BOOL){
+            res = new BoolNode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.STRING){
+            res = new StringNode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.CHAR){
+            res = new CharNode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.SQUAREBRACKETOPEN){
+            filter.matchToken();
+            //Range || Map || Array ?
+            if(filter.getToken().kind == Token.Type.SQUAREBRACKETOPEN){
+                filter.matchToken();
+                List<Token> entries = new ArrayList<Token>();
+                //Map || Array ?
+                while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
+                    //TODO
+                }
+            }else{ // Range
+                Pair<ExprNode,ExprNode> range;
+                List<Pair<ExprNode,ExprNode>> entries = new ArrayList<Pair<ExprNode,ExprNode>>();
+                while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
+                    if(filter.getToken(1).kind == Token.Type.POP){ // -
+                        ExprNode l = expr(synco);
+                        filter.matchToken(); // -
+                        ExprNode r = expr(synco);
+                        range = new Pair<ExprNode,ExprNode>(l,r);
+                    }else{
+                        range = new Pair<ExprNode,ExprNode>(expr(synco),null);
+                    }
+                    entries.add(range);
+                    if(filter.getToken().kind == Token.Type.COMMA)
+                        filter.matchToken();
+                }
+                filter.matchToken(); // ]
+                res = new RangeNode(entries);
+            }
+        }
+        else if (filter.getToken().kind == Token.Type.STATE){
+            Token content = filter.getToken();
+            filter.matchToken();
+            if(filter.getToken().kind == Token.Type.STATEACC){
+                res = new StateNode(content, true);
+                filter.matchToken();
+            }
+            else
+                res = new StateNode(content,false);
+        }
+        else if (filter.getToken().kind == Token.Type.TRANSSTART){
+            //TODO
+            res = new Node(filter.getToken());
             filter.matchToken();
         }
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
