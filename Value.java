@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.util.ElementScanner14;
 
 import Bibliothek.*;
 
@@ -26,7 +27,33 @@ public class Value {
     public Value() {};
 
     public String toString() {
-        //TODO
+        if(type == Type.charType){
+            return String.valueOf(c);
+        }else if(type == Type.stringType){
+            return stg;
+        }else if(type == Type.intType){
+            return String.valueOf(stg);
+        }else if(type == Type.booleanType){
+            return String.valueOf(b);
+        }else if(type == Type.arrayType){
+            return va.toString();
+        }else if(type == Type.stateType){
+            return s.toString();
+        }else if(type == Type.rangeType){
+            return r.toString();
+        }else if(type == Type.transitionType){
+            return t.toString();
+        }else if(type == Type.epsilonTransitionType){
+            return et.toString();
+        }else if(type == Type.finiteAutomataType){
+            return fa.toString();
+        }else if(type == Type.regularExpressionType){
+            return re.toString();
+        }else if(type == Type.setType){
+            return st.toString();
+        }else if(type == Type.mapType){
+            return mp.toString();
+        }else return "Error Converting Value to String with Type "+type.toString();
     }
 
     public Value(String stg){ type = Type.stringType; this.stg=stg;};
