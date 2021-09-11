@@ -43,7 +43,7 @@ public class Value {
     public Value(Map<Value,Value> mp) { type = Type.setType; this.mp = mp;}
     public Value(List<Value> ar) { type = Type.arrayType; this.ar = ar;}
     public Value(Value va[]) { type = Type.arrayType; this.va = va;}
-    public Value(Value c) { type = c.type; this.c =c.c; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp;}
+    public Value(Value c) { type = c.type; this.c =c.c; stg=c.stg; b=c.b; i=c.i; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp; ar=c.ar; va=c.va;}
 
     //public Value(Set<Node> st) { type = Type.setType; this.st = st;}
     //public Value(Map<Node,Node> mp) { type = Type.setType; this.mp = mp;}

@@ -8,6 +8,7 @@ public class Type {
     public static Type stringType = new Type("string");
     public static Type intType = new Type("int");
     public static Type booleanType = new Type("boolean");
+    public static Type arrayType = new Type("array");
     public static Type errorType = new Type("error");
     public static Type stateType = new Type("state");
     public static Type rangeType = new Type("range");
@@ -17,6 +18,7 @@ public class Type {
     public static Type regularExpressionType = new Type("regularExpression");
     public static Type setType = new Type("set");
     public static Type mapType = new Type("map");
+
 
     public String toString() {
         return name;
