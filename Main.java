@@ -15,7 +15,7 @@ public class Main{
             else{
                 System.out.println("Errors:");
                 int i=1;
-                for (CompilerError error:errors)
+                for (InterpreterError error:errors)
                     System.out.println(i++ +") "+error);
             }    
         }catch(IOException e){System.out.println(e);}
