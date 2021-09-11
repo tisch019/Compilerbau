@@ -1,4 +1,5 @@
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,10 +39,14 @@ public class Value {
     public Value(EpsilonTransition et) { type = Type.epsilonTransitionType; this.et = et;}
     public Value(FiniteAutomata fa) { type = Type.finiteAutomataType; this.fa = fa;}
     public Value(RegularExpression re) { type = Type.regularExpressionType; this.re = re;}
+    public Value(Set<Value> st) { type = Type.setType; this.st = st;}
+    public Value(Map<Value,Value> mp) { type = Type.setType; this.mp = mp;}
+    public Value(List<Value> ar) { type = Type.arrayType; this.ar = ar;}
+    public Value(Value va[]) { type = Type.arrayType; this.va = va;}
     public Value(Value c) { type = c.type; this.c =c.c; i=c.i; b=c.b; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp;}
 
-    public Value(Set<Node> st) { type = Type.setType; this.st = st;}
-    public Value(Map<Node,Node> mp) { type = Type.setType; this.mp = mp;}
+    //public Value(Set<Node> st) { type = Type.setType; this.st = st;}
+    //public Value(Map<Node,Node> mp) { type = Type.setType; this.mp = mp;}
 
     public Value(Type x, Object v) {
         if(x == Type.charType) c = (char) v;
