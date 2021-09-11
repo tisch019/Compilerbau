@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 
 import Bibliothek.*;
 
@@ -616,7 +617,7 @@ class TransitionNode extends ExprNode {
         } 
         else
         {
-            return indent + "Transitionnode: $\""+ start.content +"\"--['" + r.charA.content + "'-'"+ r.charB.content + "'" + "]-->$\"" + end.content + "\"";
+            return indent + "Transitionnode: $\""+ start.content +"\"--['" + r.toString() + "'-'"+ r.toString() + "'" + "]-->$\"" + end.content + "\"";
         }
     }
 
@@ -703,9 +704,10 @@ class RegularExpressionNode extends ExprNode {
 
 class SetNode extends ExprNode {
     Token type;
-    List<Token> list;
-
-    public SetNode(Token type, List<Token> list){
+    List<ExprNode> list;
+    
+    
+    public SetNode(Token type, List<ExprNode> list){
         super(type, type);
         this.type = type;
         this.list = list;
@@ -713,15 +715,15 @@ class SetNode extends ExprNode {
 
     @Override
     public String toString(String indent) {
-        return indent + "Set<" + type.kind.toString() + "> = new HashSet<" + type.kind.toString() + ">;" ;
+        return indent + "Set<" + type.content + "> = new HashSet<" + type.content + ">;" ;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        for (Token i : list) {
-            if(i.kind.toString() != type.kind.toString())
+        for (ExprNode i : list) {
+            if(i.type.toString() != type.content.toString())
             {
-                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ i.kind.toString() + " vs " + type.kind.toString() + " Type of Set)"));
+                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Set)"));
                 return Type.errorType;
             }
         }
@@ -731,14 +733,11 @@ class SetNode extends ExprNode {
     @Override
     public Value runExpr() {
         Set<Value> verified = new HashSet<Value>();
-        for(Token i : list) {
-            if(i.kind.toString() == "STRING") {
-                Value zw = new Value(i.content);
-                StringNode stg = new StringNode(i);
+        for(ExprNode i : list) {
+                Value zw = i.runExpr();
                 verified.add(zw);
-            }
         }
-        //Value erg = new Value(verified);
+        Value erg = new Value(verified);
 
       return erg;
     }
@@ -747,10 +746,10 @@ class SetNode extends ExprNode {
 
 class MapNode extends ExprNode {
     Token type;
-    List<Token> keyTypes;
-    List<Token> valueTypes;
+    List<ExprNode> keyTypes;
+    List<ExprNode> valueTypes;
 
-    public MapNode(Token type, List<Token> keyTypes, List<Token> valueTypes){
+    public MapNode(Token type, List<ExprNode> keyTypes, List<ExprNode> valueTypes){
         super(type, type);
         this.type = type;
         this.keyTypes = keyTypes;
@@ -759,23 +758,28 @@ class MapNode extends ExprNode {
 
     @Override
     public String toString(String indent) {
-        return indent + "Map<" + keyTypes.get(0).kind.toString() + "," + valueTypes.get(0).kind.toString() + ">;" ;
+        return indent + "Map<" + keyTypes.get(0).type.toString() + "," + valueTypes.get(0).type.toString() + ">;" ;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        for (Token i : keyTypes) {
-            if(i.kind.toString() != type.kind.toString())
+        if(keyTypes.size() != valueTypes.size())
+        {
+            errors.add(new SemanticError(start, end, "Different Size between Map-KeyTypes and Map-ValueTypes"));
+        }
+
+        for (ExprNode i : keyTypes) {
+            if(i.type.toString() != type.content.toString())
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes (Token: "+ i.kind.toString() + " vs " + type.kind.toString() + " Type of Map)"));
+                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Map)"));
                 return Type.errorType;
             }
         }
 
-        for (Token i : valueTypes) {
-            if(i.kind.toString() != type.kind.toString())
+        for (ExprNode i : valueTypes) {
+            if(i.type.toString() != type.content.toString())
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes (Token: "+ i.kind.toString() + " vs " + type.kind.toString() + " Type of Map)"));
+                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Map)"));
                 return Type.errorType;
             }
         }
@@ -785,8 +789,50 @@ class MapNode extends ExprNode {
     @Override
     public Value runExpr() {
         Map<Value, Value> verified = new HashMap<Value, Value>();
+        for(int i = 0; i < keyTypes.size(); i++)
+        {
+            Value key = keyTypes.get(i).runExpr();
+            Value valuetype = valueTypes.get(i).runExpr();
+            verified.put(key, valuetype);
+        }
         Value erg = new Value(verified);    
         return erg;
+    }
+
+}
+
+class ArrayNode extends ExprNode {
+    Token type;
+    List<ExprNode> list;
+    
+    
+    public ArrayNode(Token type, List<ExprNode> list){
+        super(type, type);
+        this.type = type;
+        this.list = list;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "Array";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.arrayType;
+    }
+
+    @Override
+    public Value runExpr() {
+        List<Value> verified = new ArrayList<Value>();
+        
+        for(ExprNode i : list) {
+                Value zw = i.runExpr();
+               verified.add(zw);
+                
+        }
+        Value erg = new Value(verified);
+      return erg;
     }
 
 }
