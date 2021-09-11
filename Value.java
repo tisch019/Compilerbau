@@ -17,8 +17,10 @@ public class Value {
     EpsilonTransition et;
     FiniteAutomata fa;
     RegularExpression re;
-    Set<Node> st;
-    Map<Node, Node> mp;
+    Set<Value> st;
+    Map<Value, Value> mp;
+    List<Value> ar;
+    Value va[];
 
     public Value() {};
 
