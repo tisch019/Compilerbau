@@ -596,28 +596,30 @@ class RangeNode extends ExprNode{
 //Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
 //und zwischen EpsilonTransition und normaler Transition unterschieden
 class TransitionNode extends ExprNode {
-    StateNode start = null;
-    StateNode end = null;
-    RangeNode r = null;
+    ExprNode start = null;
+    ExprNode end = null;
+    ExprNode r = null;
 
-    public TransitionNode(StateNode start, StateNode end, RangeNode r) {
-        super(start.content, end.content);
+    public TransitionNode(ExprNode start, ExprNode end, ExprNode r) {
+        super(start.start, end.end);
+        this.start = start;
+        this.end = end;
         this.r = r;
     }
 
-    public TransitionNode(StateNode start, StateNode end) {
-        super(start.content, end.content);
+    public TransitionNode(ExprNode start, ExprNode end) {
+        super(start.start, end.end);
+        this.start = start;
+        this.end = end;
     }
 
     @Override
     public String toString(String indent) {
-        if(r == null)
-        {
-        return indent + "Transitionnode: $\""+ start.content +"\"--->$\"" + end.content + "\"";
+        if(r == null){
+        return indent + "Transitionnode: $\""+ start.toString() +"\"--->$\"" + end.toString() + "\"";
         } 
-        else
-        {
-            return indent + "Transitionnode: $\""+ start.content +"\"--['" + r.toString() + "'-'"+ r.toString() + "'" + "]-->$\"" + end.content + "\"";
+        else{
+            return indent + "Transitionnode: $\""+ start.toString() +"\"--['" + r.toString() + "'-'"+ r.toString() + "'" + "]-->$\"" + end.toString() + "\"";
         }
     }
 
@@ -628,12 +630,10 @@ class TransitionNode extends ExprNode {
     public Value runExpr() {
         Value erg;
 
-        if(r == null)
-        {
+        if(r == null){
             erg = new Value(new EpsilonTransition(start.runExpr().s, end.runExpr().s));
         } 
-        else 
-        {
+        else {
             erg = new Value(new Transition(start.runExpr().s, end.runExpr().s, r.runExpr().r));
         }
         return erg;
