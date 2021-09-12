@@ -5,19 +5,19 @@ public class Type {
     }
 
     public static Type charType = new Type("char");
-    public static Type stringType = new Type("string");
+    public static Type stringType = new Type("String");
     public static Type intType = new Type("int");
     public static Type booleanType = new Type("boolean");
     public static Type arrayType = new Type("array");
     public static Type errorType = new Type("error");
-    public static Type stateType = new Type("state");
-    public static Type rangeType = new Type("range");
-    public static Type transitionType = new Type("transition");
+    public static Type stateType = new Type("State");
+    public static Type rangeType = new Type("Range");
+    public static Type transitionType = new Type("Transition");
     public static Type epsilonTransitionType = new Type("epsilonTransition");
-    public static Type finiteAutomataType = new Type("finiteAutomata");
-    public static Type regularExpressionType = new Type("regularExpression");
-    public static Type setType = new Type("set");
-    public static Type mapType = new Type("map");
+    public static Type finiteAutomataType = new Type("FA");
+    public static Type regularExpressionType = new Type("RE");
+    public static Type setType = new Type("Set");
+    public static Type mapType = new Type("Map");
 
 
     public String toString() {
@@ -35,21 +35,21 @@ public class Type {
                 return intType;
             case("boolean"):
                 return booleanType;
-            case("state"):
+            case("State"):
                 return stateType;
-            case("range"):
+            case("Range"):
                 return rangeType;
-            case("transition"):
+            case("Transition"):
                 return transitionType;
             case("epsilonTransition"):
                 return epsilonTransitionType;
-            case("finiteAutomata"):
+            case("FA"):
                 return finiteAutomataType;
-            case("regularExpression"):
+            case("RE"):
                 return regularExpressionType;
-            case("set"):
+            case("Set"):
                 return setType;
-            case("map"):
+            case("Map"):
                 return mapType;
             default:
                 return errorType;
