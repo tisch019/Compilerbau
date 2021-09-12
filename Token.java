@@ -46,7 +46,9 @@ public class Token
         TRANSEND,       // -->
         TRANSEPSI,      // --->
         FASTART,        // <
+        FAREGEXSTART,   // </
         FAEND,          // >
+        FAREGEXEND,     // />
         RA,             // /.../
         SET,            // {...} von BLOCKSTART zu unterscheiden
         TYPE,           // Bsp. Map<type1,type2> braucht Type Token

@@ -184,6 +184,9 @@ public class Lexer {
                         t.kind = Token.Type.COMP;
                     } else if (nextChar == '$') {
                         t.kind = Token.Type.FASTART;
+                    } else if (nextChar == '/') {
+                        t.kind = Token.Type.FAREGEXSTART;
+                        state = 50; // Regex in state 50 mit persitant State bauen und Ende erkennen
                     }
                     state = 100;
                     break;
