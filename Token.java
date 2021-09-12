@@ -20,6 +20,9 @@ public class Token
         ELSE,           // else
         WHILE,          // while
         PRINT,          // Print Befehl zur Ausgabe
+        CONTAINSHELP,   // .contains oder .containsKey -> wird im Filter unterschieden
+        CONTAINS,       // .contains
+        CONTAINSKEY,    // .containsKey
                     //Schlüsselworte
         KEYSTRING,      // String Schlüsselwort
         KEYCHAR,        // Char Schlüsselwort
