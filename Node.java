@@ -153,16 +153,7 @@ class PrintNode extends StmntNode {
     }
     public void run() {
         Value ausg = expr.runExpr();
-        if (ausg.type == Type.booleanType) System.out.println(ausg.b);
-        else if (ausg.type == Type.charType) System.out.println(ausg.c);
-        else if (ausg.type == Type.intType) System.out.println(ausg.i);
-        else if (ausg.type == Type.stateType) System.out.println(ausg.s);
-        else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
-        else if (ausg.type == Type.transitionType) System.out.println(ausg.t);
-        else if (ausg.type == Type.epsilonTransitionType) System.out.println(ausg.et);
-        else if (ausg.type == Type.finiteAutomataType) System.out.println(ausg.fa);
-        else if (ausg.type == Type.regularExpressionType) System.out.println(ausg.re);
-        else System.out.println("unknown type");
+        System.out.println(ausg.toString());
     }
 }
 
