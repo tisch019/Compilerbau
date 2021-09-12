@@ -483,6 +483,9 @@ public class Parser {
                 res = stateA;
             }
         }
+        //TODO RA
+        //TODO FA
+        //TODO SET
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
             res = new IdentifierNode(filter.getToken());
             filter.matchToken();
