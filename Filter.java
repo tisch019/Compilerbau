@@ -54,6 +54,7 @@ class Filter{
             logger.info("Content of current token: " + currentToken.content);
             switch (currentToken.content) {
                 case "String": currentToken.kind = Token.Type.KEYSTRING; break;
+                case "char": currentToken.kind = Token.Type.KEYCHAR; break;
                 case "int": currentToken.kind = Token.Type.KEYINT; break;
                 case "boolean": currentToken.kind = Token.Type.KEYBOOL; break;
                 case "false":

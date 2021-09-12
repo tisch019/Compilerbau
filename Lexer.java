@@ -84,6 +84,11 @@ public class Lexer {
                             t.kind = Token.Type.SEM;
                             state = 100;
                             break;
+                        case ':':
+                            mark();
+                            t.kind = Token.Type.MAPDELI;
+                            state = 100;
+                            break;
                         case ',':
                             mark();
                             t.kind = Token.Type.COMMA;
