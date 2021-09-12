@@ -51,9 +51,10 @@ class Filter{
             if (currentToken.kind == Token.Type.ERROR) errors.add(new LexerError(currentToken, "Unknown token " + currentToken.content));
         } while (currentToken.kind == Token.Type.WS || currentToken.kind == Token.Type.ERROR);
         if (currentToken.kind == Token.Type.IDENTIFIER) {
-            logger.info("Content of current token: " + currentToken.content);
+            logger.info("Content of current token from kind identifier: " + currentToken.content);
             switch (currentToken.content) {
                 case "String": currentToken.kind = Token.Type.KEYSTRING; break;
+                case "char": currentToken.kind = Token.Type.KEYCHAR; break;
                 case "int": currentToken.kind = Token.Type.KEYINT; break;
                 case "boolean": currentToken.kind = Token.Type.KEYBOOL; break;
                 case "false":
@@ -71,8 +72,14 @@ class Filter{
                 case "print": currentToken.kind = Token.Type.PRINT; break;
                 default: currentToken.kind = Token.Type.IDENTIFIER; break;
             }
-            logger.info("Recognized type of current token: " + currentToken.kind);
+        } else if (currentToken.kind == Token.Type.CONTAINSHELP){
+                switch (currentToken.content) {
+                    case ".contains": currentToken.kind = Token.Type.CONTAINS; break;
+                    case ".containsKey": currentToken.kind = Token.Type.CONTAINSKEY; break;
+                    default: currentToken.kind = Token.Type.ERROR; logger.info("Error in Filter in CONTAINSHELPER with content: " + currentToken.content); break;
+                }
         }
+        logger.info("Recognized type of current token: " + currentToken.kind);
         currentToken.index = index++;
         return currentToken;
     }

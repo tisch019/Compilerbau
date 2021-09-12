@@ -84,10 +84,20 @@ public class Lexer {
                             t.kind = Token.Type.SEM;
                             state = 100;
                             break;
+                        case ':':
+                            mark();
+                            t.kind = Token.Type.MAPDELI;
+                            state = 100;
+                            break;
                         case ',':
                             mark();
                             t.kind = Token.Type.COMMA;
                             state = 100;
+                            break;
+                        case '.':
+                            mark();
+                            t.kind = Token.Type.CONTAINSHELP;
+                            state = 24;
                             break;
                         case ' ':
                         case '\t':
@@ -345,6 +355,14 @@ public class Lexer {
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
+                        state = 100;
+                    }
+                    break;
+                case 24:
+                    if (isIdentChar(nextChar)) {
+                        mark();
+                    } else {
+                        mark();
                         state = 100;
                     }
                     break;

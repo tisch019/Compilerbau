@@ -380,7 +380,7 @@ public class Parser {
     }
 
     // atom = INT | BOOL | STRING | CHAR | RANGE | STATE | TRANSITION | FA | RA 
-    //       | SET? | MAP? 
+    //       | SET | MAP | ARRAY 
     //       | IDENTIFIER | ("+"|"-") atom | "(" expr ")"
     // no syncs
     ExprNode atom(Set<Token.Type> synco) throws IOException, ParserError {
@@ -436,7 +436,8 @@ public class Parser {
                     elements.add(pair);
                 }
                 filter.matchToken(); // ]]
-                res = new MapNode(elements);
+                //TODO
+                //res = new MapNode(elements);
             }else{
                 //Array
                 List<ExprNode> elements = new ArrayList<ExprNode>();
@@ -445,24 +446,42 @@ public class Parser {
                     if(filter.getToken().kind != Token.Type.MAPARRAYEND)
                         filter.matchToken(Token.Type.COMMA, synco);
                 }
+                
                 filter.matchToken(); // ]]
-                res = new ArrayNode(elements);
+                //TODO
+                //res = new ArrayNode(elements);
             }
         }
         else if (filter.getToken().kind == Token.Type.STATE){
+            StateNode stateA;
             Token content = filter.getToken();
             filter.matchToken();
             if(filter.getToken().kind == Token.Type.STATEACC){
-                res = new StateNode(content, true);
+                stateA = new StateNode(content, true);
                 filter.matchToken();
             }
             else
-                res = new StateNode(content,false);
-        }
-        else if (filter.getToken().kind == Token.Type.TRANSSTART){
-            //TODO
-            res = new Node(filter.getToken());
-            filter.matchToken();
+                stateA = new StateNode(content,false);
+
+            if(filter.getToken().kind == Token.Type.TRANSSTART
+                || filter.getToken().kind == Token.Type.TRANSEPSI){
+                //Transition
+                if(filter.getToken().kind == Token.Type.TRANSSTART){
+                    //Trans = STATE TRANSSTART RANGE TRANSEND STATE
+                    filter.matchToken(); // --
+                    ExprNode r = expr(synco);
+                    filter.matchToken(Token.Type.TRANSEND,synco); // -->
+                    ExprNode stateB = expr(synco);
+                    res = new TransitionNode(stateA,r,stateB);
+                }else if(filter.getToken().kind == Token.Type.TRANSEPSI){
+                    //TransEpsi = STATE TRANSEPSI STATE
+                    filter.matchToken(); // --->
+                    ExprNode stateB = expr(synco);
+                    res = new TransitionNode(stateA,stateB);
+                }
+            }else{ //No Transition but State
+                res = stateA;
+            }
         }
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
             res = new IdentifierNode(filter.getToken());
