@@ -44,15 +44,7 @@ public class Parser {
         {
             try{
                 // Declaration
-                if(filter.getToken().kind == Token.Type.KEYBOOL
-                    || filter.getToken().kind == Token.Type.KEYINT
-                    || filter.getToken().kind == Token.Type.KEYFA
-                    || filter.getToken().kind == Token.Type.KEYRA
-                    || filter.getToken().kind == Token.Type.KEYMAP
-                    || filter.getToken().kind == Token.Type.KEYRANGE
-                    || filter.getToken().kind == Token.Type.KEYSET
-                    || filter.getToken().kind == Token.Type.KEYSTATE
-                    || filter.getToken().kind == Token.Type.KEYTRANSITION)
+                if(filter.getToken().isKeyType())
                     result.add(decl(sync));
                 else //Statement 
                     result.add(stmnt(sync));
@@ -70,38 +62,103 @@ public class Parser {
 
         Token typ = null;
         Token name = null;
-        List<Token> genericTypes = new ArrayList<Token>();
         Token sem = null;
+        try{
+            typ = filter.getToken();
+
+            if(typ.kind == Token.Type.KEYMAP)
+                return mapDecl(sync);
+            if(typ.kind == Token.Type.KEYSET)
+                return setDecl(sync);
+
+            filter.matchToken(); //typ
+            
+            name = filter.getToken();
+            filter.matchToken(Token.Type.IDENTIFIER, sync);
+            sem = filter.getToken();
+            filter.matchToken(Token.Type.SEM, sync);          
+        }catch(ParserError error){
+            if(filter.getToken().kind == Token.Type.SEM){
+                filter.matchToken();
+                return new DeclNode(typ,null,name,sem);
+            }
+            else throw error;
+        }
+        return new DeclNode(typ,null,name,sem);
+    }
+
+    DeclNode mapDecl(Set<Token.Type> sync) throws IOException, ParserError{
+        // Map<type,type>
+        // KEYMAP COMP ({ KEY } COMMA? )* COMP
+        Token typ = null;
+        Token name = null;
+        Token sem = null;
+
+        List<Token> genericTypes = new ArrayList<Token>();
+        
         try{
             typ = filter.getToken();
             filter.matchToken();
 
-            while(filter.getToken().kind != Token.Type.IDENTIFIER){
+            filter.matchToken(Token.Type.COMP,sync);           // <
+
+            if(filter.getToken().isKeyType()){
                 genericTypes.add(filter.getToken());
+                filter.matchToken();                            //first Type
+            }else// No KeyType received
                 filter.matchToken(Token.Type.TYPE, sync);
-            }
+
+            filter.matchToken(Token.Type.COMMA, sync);          // ,
+
+            if(filter.getToken().isKeyType()){
+                genericTypes.add(filter.getToken());
+                filter.matchToken();                            //second Type
+            }else// No KeyType received
+                filter.matchToken(Token.Type.TYPE, sync);
+            
+            filter.matchToken(Token.Type.COMP, sync);           // >
 
             name = filter.getToken();
             filter.matchToken(Token.Type.IDENTIFIER, sync);
-
+            sem = filter.getToken();
             filter.matchToken(Token.Type.SEM, sync);
-            
-            /*
-            TODO | type IDENTIFIER SETTO expr
-            BinOpNode regelt SETTO
-            Left = IdentifierNode, right ExprNode, op SETTO
+        }catch(ParserError error){
+            if(filter.getToken().kind == Token.Type.SEM){
+                filter.matchToken();
+                return new DeclNode(typ,genericTypes,name,sem);
+            }
+            else throw error;
+        }
+        return new DeclNode(typ,genericTypes,name,sem);
+    }
 
+    DeclNode setDecl(Set<Token.Type> sync) throws IOException, ParserError{
+        // Set<type>
+        // KEYSET COMP KEY COMP
+        Token typ = null;
+        Token name = null;
+        Token sem = null;
+
+        List<Token> genericTypes = new ArrayList<Token>();
+        
+        try{
             typ = filter.getToken();
             filter.matchToken();
 
-            if(filter.getToken(1).kind == Token.Type.SETTO)
-            {
-                filter.matchToken();
-                value = filter.getToken();
-                filter.matchToken(Token.Type., sync);
-            }*/
+            filter.matchToken(Token.Type.COMP,sync);           // <
 
+            if(filter.getToken().isKeyType()){
+                genericTypes.add(filter.getToken());
+                filter.matchToken();                            //first Type
+            }else// No KeyType received
+                filter.matchToken(Token.Type.TYPE, sync);
             
+            filter.matchToken(Token.Type.COMP, sync);           // >
+
+            name = filter.getToken();
+            filter.matchToken(Token.Type.IDENTIFIER, sync);
+            sem = filter.getToken();
+            filter.matchToken(Token.Type.SEM, sync);
         }catch(ParserError error){
             if(filter.getToken().kind == Token.Type.SEM){
                 filter.matchToken();
@@ -224,15 +281,7 @@ public class Parser {
                 && filter.getToken().kind != Token.Type.EOF
         ) {
             try {
-                if (filter.getToken().kind == Token.Type.KEYBOOL
-                    || filter.getToken().kind == Token.Type.KEYINT
-                    || filter.getToken().kind == Token.Type.KEYFA
-                    || filter.getToken().kind == Token.Type.KEYRA
-                    || filter.getToken().kind == Token.Type.KEYMAP
-                    || filter.getToken().kind == Token.Type.KEYRANGE
-                    || filter.getToken().kind == Token.Type.KEYSET
-                    || filter.getToken().kind == Token.Type.KEYSTATE
-                    || filter.getToken().kind == Token.Type.KEYTRANSITION)
+                if (filter.getToken().isKeyType())
                     res.add(decl(sync));
                 else res.add(stmnt(sync));
             } catch (ParserError error) {
