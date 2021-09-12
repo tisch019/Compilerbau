@@ -76,12 +76,14 @@ class CUNode extends Node {
 
  class DeclNode extends Node {
     Token typ;
+    List<Token> genericTypes;
     Token name;
     Value wert;
 
-    public DeclNode(Token typ, Token name, Token end) {
+    public DeclNode(Token typ, List<Token> genericTypes, Token name, Token end) {
         super(typ, end);
         this.typ = typ;
+        this.genericTypes = genericTypes;
         this.name = name;
         wert = new Value();
         switch(typ.content)
@@ -108,7 +110,20 @@ class CUNode extends Node {
 
     }
     public String toString(String indent) {
-        return indent+"Declaration: "+typ.content+" "+name.content;
+        String s = indent+"Declaration: "+typ.content;
+        if(genericTypes!=null && genericTypes.size()!=0){
+            s+="<";
+            int i = 0;
+            s+=genericTypes.get(i).content;
+            i++;
+            while(genericTypes.size()>i){
+                s+=",";
+                s+=genericTypes.get(i).content;
+            }
+            s+=">";
+        }
+        s+=" "+name.content;
+        return s;
     }
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         tabelle.add(name.content, Type.getType(typ.content), this);

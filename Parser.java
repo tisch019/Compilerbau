@@ -70,11 +70,16 @@ public class Parser {
 
         Token typ = null;
         Token name = null;
-        Token value = null;
+        List<Token> genericTypes = new ArrayList<Token>();
         Token sem = null;
         try{
             typ = filter.getToken();
             filter.matchToken();
+
+            while(filter.getToken().kind != Token.Type.IDENTIFIER){
+                genericTypes.add(filter.getToken());
+                filter.matchToken(Token.Type.TYPE, sync);
+            }
 
             name = filter.getToken();
             filter.matchToken(Token.Type.IDENTIFIER, sync);
@@ -100,11 +105,11 @@ public class Parser {
         }catch(ParserError error){
             if(filter.getToken().kind == Token.Type.SEM){
                 filter.matchToken();
-                return new DeclNode(typ,name,sem);
+                return new DeclNode(typ,genericTypes,name,sem);
             }
             else throw error;
         }
-        return new DeclNode(typ,name,sem);
+        return new DeclNode(typ,genericTypes,name,sem);
     }
 
     // stmnt = ifStmnt | whileStmnt | exprStmnt | emptyStmnt | block
