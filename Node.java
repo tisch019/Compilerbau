@@ -89,23 +89,29 @@ class CUNode extends Node {
         switch(typ.content)
         {
             case("int"):
-                wert.type = Type.intType;
-            case("double"):
-                wert.type = Type.charType;
+                wert.type = Type.intType;break;
+            case("char"):
+                wert.type = Type.charType;break;
             case("boolean"):
-                wert.type = Type.booleanType;
-            case("state"):
-                wert.type = Type.stateType;
-            case("range"):
-                wert.type = Type.rangeType;
-            case("transition"):
-                wert.type = Type.transitionType;
+                wert.type = Type.booleanType;break;
+            case("String"):
+                wert.type = Type.stringType;break;
+            case("State"):
+                wert.type = Type.stateType;break;
+            case("Range"):
+                wert.type = Type.rangeType;break;
+            case("Transition"):
+                wert.type = Type.transitionType;break;
             case("epsilonTransition"):
-                wert.type = Type.epsilonTransitionType;
-            case("finiteAutomata"):
-                wert.type = Type.finiteAutomataType;
-            case("regularExpression"):
-                wert.type = Type.regularExpressionType;
+                wert.type = Type.epsilonTransitionType;break;
+            case("FA"):
+                wert.type = Type.finiteAutomataType;break;
+            case("RA"):
+                wert.type = Type.regularExpressionType;break;
+            case("Set"):
+                wert.type = Type.setType;break;
+            case("Map"):
+                wert.type = Type.mapType;break;
         }
 
     }
