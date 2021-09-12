@@ -670,37 +670,7 @@ class FiniteAutomataNode extends ExprNode{
 }
 
 
-class RegularExpressionNode extends ExprNode {
-    String operation = null;
-    RegularExpressionNode left;
-    RegularExpressionNode right;
 
-    public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
-        super(left.start, right.end);
-    }
-
-    @Override
-    public String toString(String indent) {
-        
-        return null;
-    }
-
-    @Override
-    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return Type.regularExpressionType;
-    }
-
-    @Override
-    public Value runExpr() {
-        //Value erg;
-        if(operation == "or")
-        {
-           // erg = new Value(new )
-        }
-        return null;
-    }
-    
-}
 
 class SetNode extends ExprNode {
     Token type;
@@ -835,4 +805,36 @@ class ArrayNode extends ExprNode {
       return erg;
     }
 
+}
+
+class RegularExpressionNode extends ExprNode {
+    String operation = null;
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+
+    public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left.start, right.end);
+    }
+
+    @Override
+    public String toString(String indent) {
+        
+        return null;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.regularExpressionType;
+    }
+
+    @Override
+    public Value runExpr() {
+        //Value erg;
+        if(operation == "or")
+        {
+           // erg = new Value(new )
+        }
+        return null;
+    }
+    
 }
