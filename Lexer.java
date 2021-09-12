@@ -239,19 +239,14 @@ public class Lexer {
                     if (isIdentChar(nextChar) || isDigit(nextChar)) {
                         mark();
                     }
-                    else {
-                        state = 8;
-                    }
-                    break;
-                case 8:
-                    if (nextChar == '"') {
+                    else if(nextChar == '"'){
                         mark();
                         state = 9;
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
                         state = 100;
-                        logger.info("Error in Lexer at case 8");
+                        logger.info("Error in Lexer at case 9");
                     }
                     break;
                 case 9:
@@ -358,6 +353,7 @@ public class Lexer {
                         state = 100;
                     }
                     break;
+                // Case 24 CONTAINSHELP
                 case 24:
                     if (isIdentChar(nextChar)) {
                         mark();
