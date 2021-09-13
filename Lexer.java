@@ -119,9 +119,13 @@ public class Lexer {
                             t.kind = Token.Type.POP;
                             state = 17;
                             break;
+                        case '/':
+                            mark();
+                            t.kind = Token.Type.LOP;
+                            state = 25;
+                            break;
                         case '%':
                         case '*':
-                        case '/':
                             mark();
                             t.kind = Token.Type.LOP;
                             state = 100;
@@ -371,6 +375,41 @@ public class Lexer {
                     } else {
                         mark();
                         state = 100;
+                    }
+                    break;
+                // Case 25 - 26 row comment
+                case 25:
+                    if (nextChar == '/') {
+                        mark();
+                        state = 26;
+                    } else if (nextChar == '*') {
+                        mark();
+                        state = 27;
+                    } else {
+                        state = 100;
+                    }
+                    break;
+                case 26:
+                    if (nextChar == '\n') {
+                        mark();
+                        state = 0;
+                        start = current;
+                    }
+                    break;
+                case 27:
+                    if (nextChar == '*') {
+                        mark();
+                        state = 28;
+                    }
+                    break;
+                case 28:
+                    if (nextChar == '/') {
+                        mark();
+                        state = 0;
+                        start = current;
+                    } else {
+                        mark();
+                        state = 27;
                     }
                     break;
             }
