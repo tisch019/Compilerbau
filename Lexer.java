@@ -11,6 +11,7 @@ public class Lexer {
     int marked = -1;
     int current;
     int start;
+    int startOffset;
     boolean ended = false;
     InputStream input = null;
 
@@ -43,6 +44,7 @@ public class Lexer {
     public Token getNextToken() throws IOException {
         marked = -1;
         int state = 0;
+        startOffset = 0;
         Token t = new Token();
         do {
             int nextChar = getNextChar();
@@ -158,6 +160,7 @@ public class Lexer {
                             mark();
                             t.kind = Token.Type.CHAR;
                             state = 22;
+                            start++;
                             break;
                         case -1:
                             mark();
@@ -348,7 +351,7 @@ public class Lexer {
                     break;
                 case 23:
                     if (nextChar == '\'') {
-                        mark();
+                        startOffset=1;
                         state = 100;
                     } else {
                         mark();
@@ -391,6 +394,7 @@ public class Lexer {
     }
 
     public void reset() {
+        start = start + startOffset;
         current = start;
     }
 
@@ -399,6 +403,7 @@ public class Lexer {
         for (; start <= marked; start++)
             erg += (char) (int) buffer.get(start);
         reset();
+        logger.info("content: " + erg);
         return erg;
     }
 }

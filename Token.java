@@ -70,7 +70,9 @@ public class Token
         RE_SINGLEMARK,  // '
         RE_RANGECHAR,   // A
         RE_RANGE,       // -
-        RE_COVER        // *
+        RE_COVER,       // *
+        RE_OPT,         // ?
+        RE_PLUS         // +
     };
     
     public Type kind;
