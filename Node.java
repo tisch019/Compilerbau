@@ -831,6 +831,7 @@ abstract class RegularExpressionNode extends ExprNode {
 
 class OrNode extends RegularExpressionNode {
 
+    
     public OrNode(RegularExpressionNode left, RegularExpressionNode right) {
         super(left, right);
         this.left = left;
@@ -849,8 +850,38 @@ class OrNode extends RegularExpressionNode {
 
     @Override
     public Value runExpr() {
-        Value erg
+        Value erg = new Value();
+        erg.type = Type.orType;
+        erg.or = new Or(left, right);
+        return erg;
+    }
+}
 
+
+class RangeExprNode extends RegularExpressionNode {
+
+    RangeNode r;
+
+    public RangeExprNode( RangeNode r) {
+        super(r, r);
+        this.r = r;
+    }
+    @Override
+    public String toString(String indent) {
+        
         return null;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.regularExpressionType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        erg.type = Type.orType;
+        erg.or = new Or(r.content);
+        return erg;
     }
 }
