@@ -19,6 +19,13 @@ public class Type {
     public static Type setType = new Type("Set");
     public static Type mapType = new Type("Map");
 
+    //RE-Types aus der Klasse RegularExpression.java
+    public static Type orType = new Type("Or");
+    public static Type concatType = new Type("Concat");
+    public static Type starType = new Type("Star");
+    public static Type rangeExprType = new Type("RangeExpr");
+    public static Type emptyWordType = new Type("EmptyWord");
+
 
     public String toString() {
         return name;

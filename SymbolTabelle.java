@@ -1,6 +1,8 @@
 import java.util.HashMap;
 import java.util.Map;
 
+import TestComp.DeclNode;
+
 class TypeNodePair {
     Type type;
     DeclNode node;

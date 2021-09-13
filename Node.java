@@ -819,15 +819,23 @@ class ArrayNode extends ExprNode {
 
 }
 
-class RegularExpressionNode extends ExprNode {
-    String operation = null;
+abstract class RegularExpressionNode extends ExprNode {
     RegularExpressionNode left;
     RegularExpressionNode right;
 
     public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
         super(left.start, right.end);
     }
+    
+}
 
+class OrNode extends RegularExpressionNode {
+
+    public OrNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
+    }
     @Override
     public String toString(String indent) {
         
@@ -841,12 +849,8 @@ class RegularExpressionNode extends ExprNode {
 
     @Override
     public Value runExpr() {
-        //Value erg;
-        if(operation == "or")
-        {
-           // erg = new Value(new )
-        }
+        Value erg
+
         return null;
     }
-    
 }

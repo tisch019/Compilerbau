@@ -3,7 +3,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.util.ElementScanner14;
+
 import Bibliothek.*;
+
 
 public class Value {
     Type type;
@@ -21,6 +24,14 @@ public class Value {
     Map<Value, Value> mp;
     List<Value> ar;
     Value va[];
+    
+
+    //RE-Types aus der Klasse RegularExpression.java
+    Or or;
+    Concat con;
+    Star star;
+    RangeExpr rExpr;
+    EmptyWord eWord;
 
     public Value() {};
 
