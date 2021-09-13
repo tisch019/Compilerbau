@@ -1,9 +1,9 @@
-import Bibliothek.*;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 public class Parser {
     Filter filter;
@@ -15,106 +15,177 @@ public class Parser {
         this.errors = errors;
     }
 
+
     // compilationUnit = { decl | stmnt } EOF
     // sync part of First(decl) + First(stmnt) + EOF
-    CUNode compilationUnit() throws IOException {
-        Set<Token.Type> sync =  new HashSet<>();
+    CUNode compilationUnit() throws IOException{
+        CUNode result = new CUNode();
+        Set<Token.Type> sync = new HashSet<>();
         sync.add(Token.Type.EOF);
-        sync.add(Token.Type.KEYDOUBLE);
+        sync.add(Token.Type.KEYBOOL);
+        sync.add(Token.Type.KEYFA);
         sync.add(Token.Type.KEYINT);
+        sync.add(Token.Type.KEYMAP);
+        sync.add(Token.Type.KEYRA);
+        sync.add(Token.Type.KEYRANGE);
+        sync.add(Token.Type.KEYSET);
+        sync.add(Token.Type.KEYSTATE);
+        sync.add(Token.Type.KEYTRANSITION);
         sync.add(Token.Type.IFSTART);
         sync.add(Token.Type.WHILE);
         sync.add(Token.Type.PRINT);
         sync.add(Token.Type.SEM);
         sync.add(Token.Type.BLOCKSTART);
 
-        CUNode result = new CUNode();
-        while (filter.getToken().kind != Token.Type.EOF) {
-            try {
-                if (filter.getToken().kind == Token.Type.KEYDOUBLE
-                        || filter.getToken().kind == Token.Type.KEYINT)
+        while(filter.getToken().kind != Token.Type.EOF)
+        {
+            try{
+                // Declaration
+                if(filter.getToken().isKeyType())
                     result.add(decl(sync));
-                else result.add(stmnt(sync));
-            } catch (ParserError error) {
-                // nothing to be done -- just proceed with decl, stmnt or EOF
-            }
+                else //Statement 
+                    result.add(stmnt(sync));
+            }catch(ParserError error){}
         }
         return result;
     }
 
     // decl = type IDENTIFIER SEM
+    //      TODO | type IDENTIFIER SETTO expr 
     // sync: SEM
-    DeclNode decl(Set<Token.Type> synco) throws IOException, ParserError {
+    DeclNode decl(Set<Token.Type> synco) throws IOException, ParserError{
         Set<Token.Type> sync = new HashSet<>(synco);
         sync.add(Token.Type.SEM);
 
-        Token typ = type();
+        Token typ = null;
         Token name = null;
-        Token end = null;
-        try {
+        Token sem = null;
+        try{
+            typ = filter.getToken();
+
+            if(typ.kind == Token.Type.KEYMAP)
+                return mapDecl(sync);
+            if(typ.kind == Token.Type.KEYSET)
+                return setDecl(sync);
+
+            filter.matchToken(); //typ
+            
             name = filter.getToken();
             filter.matchToken(Token.Type.IDENTIFIER, sync);
-            end = filter.getToken();
-            filter.matchToken(Token.Type.SEM, sync);
-        } catch (ParserError error) {
-            if (filter.getToken().kind == Token.Type.SEM) {
+            sem = filter.getToken();
+            filter.matchToken(Token.Type.SEM, sync);          
+        }catch(ParserError error){
+            if(filter.getToken().kind == Token.Type.SEM){
                 filter.matchToken();
-                return new DeclNode(typ,name,end);
+                return new DeclNode(typ,null,name,sem);
             }
             else throw error;
         }
-        return new DeclNode(typ,name,end);
+        return new DeclNode(typ,null,name,sem);
     }
-    // type = "double" | "int" -- we already know it is int or double !
-    Token type() throws IOException, ParserError {
-        Token res = filter.getToken();
-        filter.matchToken();
-        return res;
+
+    DeclNode mapDecl(Set<Token.Type> sync) throws IOException, ParserError{
+        // Map<type,type>
+        // KEYMAP COMP ({ KEY } COMMA? )* COMP
+        Token typ = null;
+        Token name = null;
+        Token sem = null;
+
+        List<Token> genericTypes = new ArrayList<Token>();
+        
+        try{
+            typ = filter.getToken();
+            filter.matchToken();
+
+            filter.matchToken(Token.Type.COMP,sync);           // <
+
+            if(filter.getToken().isKeyType()){
+                genericTypes.add(filter.getToken());
+                filter.matchToken();                            //first Type
+            }else// No KeyType received
+                filter.matchToken(Token.Type.TYPE, sync);
+
+            filter.matchToken(Token.Type.COMMA, sync);          // ,
+
+            if(filter.getToken().isKeyType()){
+                genericTypes.add(filter.getToken());
+                filter.matchToken();                            //second Type
+            }else// No KeyType received
+                filter.matchToken(Token.Type.TYPE, sync);
+            
+            filter.matchToken(Token.Type.COMP, sync);           // >
+
+            name = filter.getToken();
+            filter.matchToken(Token.Type.IDENTIFIER, sync);
+            sem = filter.getToken();
+            filter.matchToken(Token.Type.SEM, sync);
+        }catch(ParserError error){
+            if(filter.getToken().kind == Token.Type.SEM){
+                filter.matchToken();
+                return new DeclNode(typ,genericTypes,name,sem);
+            }
+            else throw error;
+        }
+        return new DeclNode(typ,genericTypes,name,sem);
+    }
+
+    DeclNode setDecl(Set<Token.Type> sync) throws IOException, ParserError{
+        // Set<type>
+        // KEYSET COMP KEY COMP
+        Token typ = null;
+        Token name = null;
+        Token sem = null;
+
+        List<Token> genericTypes = new ArrayList<Token>();
+        
+        try{
+            typ = filter.getToken();
+            filter.matchToken();
+
+            filter.matchToken(Token.Type.COMP,sync);           // <
+
+            if(filter.getToken().isKeyType()){
+                genericTypes.add(filter.getToken());
+                filter.matchToken();                            //first Type
+            }else// No KeyType received
+                filter.matchToken(Token.Type.TYPE, sync);
+            
+            filter.matchToken(Token.Type.COMP, sync);           // >
+
+            name = filter.getToken();
+            filter.matchToken(Token.Type.IDENTIFIER, sync);
+            sem = filter.getToken();
+            filter.matchToken(Token.Type.SEM, sync);
+        }catch(ParserError error){
+            if(filter.getToken().kind == Token.Type.SEM){
+                filter.matchToken();
+                return new DeclNode(typ,genericTypes,name,sem);
+            }
+            else throw error;
+        }
+        return new DeclNode(typ,genericTypes,name,sem);
     }
 
     // stmnt = ifStmnt | whileStmnt | exprStmnt | emptyStmnt | block
     //         | printStmnt
     // no syncs
     StmntNode stmnt(Set<Token.Type> synco) throws IOException, ParserError {
-       Token.Type kind = filter.getToken().kind;
-
-       StmntNode res = null;
-
-       if (kind == Token.Type.IFSTART) res=ifStmnt(synco);
-       else if (kind == Token.Type.WHILE) res=whileStmnt(synco);
-       else if (kind == Token.Type.BLOCKSTART) res=block(synco);
-       else if (kind == Token.Type.PRINT) res=printStmnt(synco);
-       else if (kind == Token.Type.SEM) {
-           res = new EmptyStmntNode(filter.getToken());
-           filter.matchToken();
-       }
-       else res=exprStmnt(synco);
-       return res;
-    }
-
-    // printStmnt = "print" expr ";"
-    // sync: ";"
-    PrintNode printStmnt(Set<Token.Type> synco) throws IOException, ParserError {
-        Set<Token.Type> sync = new HashSet<>(synco);
-        sync.add(Token.Type.SEM);
-
-        Token start = filter.getToken();
-        Token end = null;
-        ExprNode expr = null;
-        filter.matchToken();
-        try {
-            expr = expr(sync);
-            end = filter.getToken();
-            filter.matchToken(Token.Type.SEM,sync);
-        } catch (ParserError error) {
-            if (filter.getToken().kind == Token.Type.SEM) {
-                filter.matchToken();
-                return null;
-            }
-            else throw error;
+        Token.Type kind = filter.getToken().kind;
+ 
+        StmntNode res = null;
+ 
+        if (kind == Token.Type.IFSTART) res=ifStmnt(synco);
+        else if (kind == Token.Type.WHILE) res=whileStmnt(synco);
+        else if (kind == Token.Type.BLOCKSTART) res=block(synco);
+        else if (kind == Token.Type.PRINT) res=printStmnt(synco);
+        else if (kind == Token.Type.SEM) {
+            res = new EmptyStmntNode(filter.getToken());
+            filter.matchToken();
         }
-        return new PrintNode(start,end,expr);
-    }
+        else res=exprStmnt(synco);
+        return res;
+     }
+
     // ifStmnt = "if" "(" expr ")" stmnt [ "else" stmnt ]
     // sync:                    ^ else, First(stmnt)
     IfNode ifStmnt(Set<Token.Type> synco) throws IOException, ParserError {
@@ -187,33 +258,11 @@ public class Parser {
         return new WhileNode(start,expr,stmnt);
     }
 
-    // exprStmnt = expr ";"
-    // sync: ";"
-    ExprStmntNode exprStmnt(Set<Token.Type> synco) throws IOException, ParserError {
-        Set<Token.Type> sync = new HashSet<>(synco);
-        sync.add(Token.Type.SEM);
-
-        Token end = null;
-        ExprNode expr = null;
-        try {
-            expr = expr(sync);
-            end = filter.getToken();
-            filter.matchToken(Token.Type.SEM, sync);
-        } catch (ParserError error) {
-            if (filter.getToken().kind == Token.Type.SEM) ;
-            else throw error;
-        }
-        return new ExprStmntNode(expr, end);
-    }
-
-    // emptyStmnt = ";"  -- see above stmnt
-
     // block = "{" { decl | stmnt } "}"
     // sync: First(decl) + first(stmnt) + "}"
     BlockNode block(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync =  new HashSet<>();
         sync.add(Token.Type.BLOCKEND);
-        sync.add(Token.Type.KEYDOUBLE);
         sync.add(Token.Type.KEYINT);
         sync.add(Token.Type.IFSTART);
         sync.add(Token.Type.WHILE);
@@ -229,8 +278,7 @@ public class Parser {
                 && filter.getToken().kind != Token.Type.EOF
         ) {
             try {
-                if (filter.getToken().kind == Token.Type.KEYDOUBLE
-                        || filter.getToken().kind == Token.Type.KEYINT)
+                if (filter.getToken().isKeyType())
                     res.add(decl(sync));
                 else res.add(stmnt(sync));
             } catch (ParserError error) {
@@ -251,6 +299,49 @@ public class Parser {
             else throw error;
         }
         return res;
+    }
+
+    // printStmnt = "print" expr ";"
+    // sync: ";"
+    PrintNode printStmnt(Set<Token.Type> synco) throws IOException, ParserError {
+        Set<Token.Type> sync = new HashSet<>(synco);
+        sync.add(Token.Type.SEM);
+
+        Token start = filter.getToken();
+        Token end = null;
+        ExprNode expr = null;
+        filter.matchToken();
+        try {
+            expr = expr(sync);
+            end = filter.getToken();
+            filter.matchToken(Token.Type.SEM,sync);
+        } catch (ParserError error) {
+            if (filter.getToken().kind == Token.Type.SEM) {
+                filter.matchToken();
+                return null;
+            }
+            else throw error;
+        }
+        return new PrintNode(start,end,expr);
+    }
+
+    // exprStmnt = expr ";"
+    // sync: ";"
+    ExprStmntNode exprStmnt(Set<Token.Type> synco) throws IOException, ParserError {
+        Set<Token.Type> sync = new HashSet<>(synco);
+        sync.add(Token.Type.SEM);
+
+        Token end = null;
+        ExprNode expr = null;
+        try {
+            expr = expr(sync);
+            end = filter.getToken();
+            filter.matchToken(Token.Type.SEM, sync);
+        } catch (ParserError error) {
+            if (filter.getToken().kind == Token.Type.SEM) ;
+            else throw error;
+        }
+        return new ExprStmntNode(expr, end);
     }
 
     // expr = IDENTIFIER "=" expr | comp
@@ -315,6 +406,7 @@ public class Parser {
         }
         return res;
     }
+
     // prod = { atom { ("*"|"/"|"%") atom } }
     // sync:         ^ "*" ...
     ExprNode prod(Set<Token.Type> synco) throws IOException, ParserError {
@@ -338,18 +430,113 @@ public class Parser {
         return res;
     }
 
-    // atom = DOUBLE | INT | IDENTIFIER | ("+"|"-") atom | "(" expr ")"
+    // atom = INT | BOOL | STRING | CHAR | RANGE | STATE | TRANSITION | FA | RA 
+    //       | SET | MAP | ARRAY 
+    //       | IDENTIFIER | ("+"|"-") atom | "(" expr ")"
     // no syncs
     ExprNode atom(Set<Token.Type> synco) throws IOException, ParserError {
         ExprNode res = null;
-        if (filter.getToken().kind == Token.Type.DOUBLE) {
-            res = new NumberDNode(filter.getToken());
-            filter.matchToken();
-        }
-        else if (filter.getToken().kind == Token.Type.INT) {
+
+        if (filter.getToken().kind == Token.Type.INT) {
             res = new NumberINode(filter.getToken());
             filter.matchToken();
         }
+        else if (filter.getToken().kind == Token.Type.BOOL){
+            res = new BoolNode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.STRING){
+            res = new StringNode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.CHAR){
+            res = new CharNode(filter.getToken());
+            filter.matchToken();
+        }
+        else if (filter.getToken().kind == Token.Type.SQUAREBRACKETOPEN){
+            //Range
+            filter.matchToken();
+            Pair<ExprNode,ExprNode> range;
+            List<Pair<ExprNode,ExprNode>> entries = new ArrayList<Pair<ExprNode,ExprNode>>();
+            while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
+                if(filter.getToken(1).kind == Token.Type.POP){ // -
+                    ExprNode l = atom(synco);
+                    filter.matchToken(); // -
+                    ExprNode r = atom(synco);
+                    range = new Pair<ExprNode,ExprNode>(l,r);
+                }else{
+                    range = new Pair<ExprNode,ExprNode>(expr(synco),null);
+                }
+                entries.add(range);
+                if(filter.getToken().kind == Token.Type.COMMA)
+                    filter.matchToken();
+            }
+            filter.matchToken(); // ]
+            res = new RangeNode(entries);
+        }
+        else if(filter.getToken().kind == Token.Type.MAPARRAYSTART){
+            if(filter.getToken(1).kind == Token.Type.MAPDELI){
+                //Map Element:Value
+                List<Pair<ExprNode,ExprNode>> elements = new ArrayList<Pair<ExprNode,ExprNode>>();
+                Pair<ExprNode,ExprNode> pair;
+                while(filter.getToken().kind != Token.Type.MAPARRAYEND){
+                    ExprNode l = expr(synco);
+                    filter.matchToken(Token.Type.MAPDELI, synco);
+                    ExprNode r = expr(synco);
+                    pair = new Pair<ExprNode,ExprNode>(l,r);
+                    elements.add(pair);
+                }
+                filter.matchToken(); // ]]
+                //TODO
+                //res = new MapNode(elements);
+            }else{
+                //Array
+                List<ExprNode> elements = new ArrayList<ExprNode>();
+                while(filter.getToken().kind != Token.Type.MAPARRAYEND){
+                    elements.add(expr(synco));
+                    if(filter.getToken().kind != Token.Type.MAPARRAYEND)
+                        filter.matchToken(Token.Type.COMMA, synco);
+                }
+                
+                filter.matchToken(); // ]]
+                //TODO
+                //res = new ArrayNode(elements);
+            }
+        }
+        else if (filter.getToken().kind == Token.Type.STATE){
+            StateNode stateA;
+            Token content = filter.getToken();
+            filter.matchToken();
+            if(filter.getToken().kind == Token.Type.STATEACC){
+                stateA = new StateNode(content, true);
+                filter.matchToken();
+            }
+            else
+                stateA = new StateNode(content,false);
+
+            if(filter.getToken().kind == Token.Type.TRANSSTART
+                || filter.getToken().kind == Token.Type.TRANSEPSI){
+                //Transition
+                if(filter.getToken().kind == Token.Type.TRANSSTART){
+                    //Trans = STATE TRANSSTART RANGE TRANSEND STATE
+                    filter.matchToken(); // --
+                    ExprNode r = expr(synco);
+                    filter.matchToken(Token.Type.TRANSEND,synco); // -->
+                    ExprNode stateB = expr(synco);
+                    res = new TransitionNode(stateA,r,stateB);
+                }else if(filter.getToken().kind == Token.Type.TRANSEPSI){
+                    //TransEpsi = STATE TRANSEPSI STATE
+                    filter.matchToken(); // --->
+                    ExprNode stateB = expr(synco);
+                    res = new TransitionNode(stateA,stateB);
+                }
+            }else{ //No Transition but State
+                res = stateA;
+            }
+        }
+        //TODO RA
+        //TODO FA
+        //TODO SET
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
             res = new IdentifierNode(filter.getToken());
             filter.matchToken();
@@ -362,7 +549,7 @@ public class Parser {
         else if (filter.getToken().kind == Token.Type.BRACKETSTART) {
             filter.matchToken();
             res = expr(synco);
-            filter.matchToken(Token.Type.BRACKETSTART, synco);
+            filter.matchToken(Token.Type.BRACKETEND, synco);
         }
         else {
             Token currentToken = filter.getToken();

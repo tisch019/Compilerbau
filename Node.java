@@ -1,5 +1,10 @@
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 
 
 //Abstrakte Klassen für alle folgenden Node-Typen
@@ -42,13 +47,6 @@ abstract class StmntNode extends Node {
     }
 }
 
-
-
-
-
-
-
-
 //Klassen aus Abstract-Klassen erstellt
 class CUNode extends Node {
     List<Node> declAndStmnts =  new LinkedList<>();
@@ -76,58 +74,66 @@ class CUNode extends Node {
 
  class DeclNode extends Node {
     Token typ;
+    List<Token> genericTypes;
     Token name;
     Value wert;
 
-    public DeclNode(Token typ, Token name, Token end) {
+    public DeclNode(Token typ, List<Token> genericTypes, Token name, Token end) {
         super(typ, end);
         this.typ = typ;
+        this.genericTypes = genericTypes;
         this.name = name;
         wert = new Value();
-        if (typ.content.equals("int")) wert.type = Type.intType;
-        else wert.type = Type.doubleType;
         switch(typ.content)
         {
             case("int"):
-                wert.type = Type.intType;
-            case("double"):
-                wert.type = Type.doubleType;
+                wert.type = Type.intType;break;
+            case("char"):
+                wert.type = Type.charType;break;
             case("boolean"):
-                wert.type = Type.booleanType;
-            case("state"):
-                wert.type = Type.stateType;
-            case("range"):
-                wert.type = Type.rangeType;
-            case("transition"):
-                wert.type = Type.transitionTape;
-            case("finiteAutomata"):
-                wert.type = Type.finiteAutomataType;
-            case("regularExpression"):
-                wert.type = Type.regularExpressionType;
+                wert.type = Type.booleanType;break;
+            case("String"):
+                wert.type = Type.stringType;break;
+            case("State"):
+                wert.type = Type.stateType;break;
+            case("Range"):
+                wert.type = Type.rangeType;break;
+            case("Transition"):
+                wert.type = Type.transitionType;break;
+            case("epsilonTransition"):
+                wert.type = Type.epsilonTransitionType;break;
+            case("FA"):
+                wert.type = Type.finiteAutomataType;break;
+            case("RA"):
+                wert.type = Type.regularExpressionType;break;
+            case("Set"):
+                wert.type = Type.setType;break;
+            case("Map"):
+                wert.type = Type.mapType;break;
         }
 
     }
     public String toString(String indent) {
-        return indent+"Declaration: "+typ.content+" "+name.content;
+        String s = indent+"Declaration: "+typ.content;
+        if(genericTypes!=null && genericTypes.size()!=0){
+            s+="<";
+            int i = 0;
+            s+=genericTypes.get(i).content;
+            i++;
+            while(genericTypes.size()>i){
+                s+=",";
+                s+=genericTypes.get(i).content;
+            }
+            s+=">";
+        }
+        s+=" "+name.content;
+        return s;
     }
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         tabelle.add(name.content, Type.getType(typ.content), this);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class PrintNode extends StmntNode {
     ExprNode expr;
@@ -145,19 +151,9 @@ class PrintNode extends StmntNode {
     }
     public void run() {
         Value ausg = expr.runExpr();
-        if (ausg.type == Type.booleanType) System.out.println(ausg.b);
-        else if (ausg.type == Type.doubleType) System.out.println(ausg.d);
-        else if (ausg.type == Type.intType) System.out.println(ausg.i);
-        else if (ausg.type == Type.stateType) System.out.println(ausg.a);
-        else if (ausg.type == Type.rangeType) System.out.println(ausg.r);
-        else if (ausg.type == Type.transitionTape) System.out.println(ausg.t);
-        else if (ausg.type == Type.finiteAutomataType) System.out.println(ausg.fa);
-        else if (ausg.type == Type.regularExpressionType) System.out.println(ausg.re);
-        else System.out.println("unknown type");
+        System.out.println(ausg.toString());
     }
 }
-
-
 
 class EmptyStmntNode extends StmntNode {
     public EmptyStmntNode(Token start) {
@@ -169,9 +165,6 @@ class EmptyStmntNode extends StmntNode {
 
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) { }
 }
-
-
-
 
 class IfNode extends StmntNode {
     ExprNode expr;
@@ -272,26 +265,6 @@ class ExprStmntNode extends StmntNode {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class NumberINode extends NumberNode {
     public NumberINode(Token content) {
         super(content);
@@ -308,37 +281,6 @@ class NumberINode extends NumberNode {
         return erg;
     }
 }
-
-class NumberDNode extends NumberNode {
-    public NumberDNode(Token content) {
-        super(content);
-    }
-    public String toString(String indent) {
-        return indent+"Double: "+content.content;
-    }
-    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return type = Type.doubleType;
-    }
-    public Value runExpr() {
-        Value erg = new Value(); erg.type = Type.doubleType;
-        erg.d = Double.parseDouble(content.content);
-        return erg;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class IdentifierNode extends ExprNode {
     Token content;
@@ -410,14 +352,12 @@ class BinOpNode extends ExprNode {
         if (op.kind == Token.Type.COMP) {
             erg.type = Type.booleanType;
             switch (op.content) {
-                case "<": if (type == Type.doubleType)
-                    erg.b = leftV.d < rightV.d;
-                else if (type == Type.intType)
+                case "<":
+                if (type == Type.intType)
                     erg.b = leftV.i < rightV.i;
                     break;
-                case ">": if (type == Type.doubleType)
-                    erg.b = leftV.d > rightV.d;
-                else if (type == Type.intType)
+                case ">":
+                if (type == Type.intType)
                     erg.b = leftV.i > rightV.i;
                     break;
             }
@@ -425,14 +365,12 @@ class BinOpNode extends ExprNode {
         else if (op.kind == Token.Type.POP) {
             erg.type = type;
             switch (op.content) {
-                case "+": if (type == Type.doubleType)
-                    erg.d = leftV.d + rightV.d;
-                else if (type == Type.intType)
+                case "+":
+                if (type == Type.intType)
                     erg.i = leftV.i + rightV.i;
                     break;
-                case "-": if (type == Type.doubleType)
-                    erg.d = leftV.d - rightV.d;
-                else if (type == Type.intType)
+                case "-":
+                if (type == Type.intType)
                     erg.i = leftV.i - rightV.i;
                     break;
             }
@@ -440,18 +378,17 @@ class BinOpNode extends ExprNode {
         else if (op.kind == Token.Type.LOP) {
             erg.type = type;
             switch (op.content) {
-                case "*": if (type == Type.doubleType)
-                    erg.d = leftV.d * rightV.d;
-                else if (type == Type.intType)
+                case "*":
+                if (type == Type.intType)
                     erg.i = leftV.i * rightV.i;
                     break;
-                case "/": if (type == Type.doubleType)
-                    erg.d = leftV.d / rightV.d;
+                case "/": if (type == Type.intType)
+                    erg.i = leftV.i / rightV.i;
                 else if (type == Type.intType)
                     erg.i = leftV.i / rightV.i;
                     break;
-                case "%": if (type == Type.doubleType)
-                    erg.d = leftV.d % rightV.d;
+                case "%": if (type == Type.intType)
+                    erg.i = leftV.i % rightV.i;
                 else if (type == Type.intType)
                     erg.i = leftV.i % rightV.i;
                     break;
@@ -487,9 +424,7 @@ class UnOpNode extends ExprNode {
         Value erg = leftV.copy();
         switch (op.content) {
             case "-":
-                if (erg.type == Type.doubleType)
-                    erg.d = - leftV.d ;
-                else if (erg.type == Type.intType)
+                if (erg.type == Type.intType)
                     erg.i = -leftV.i;
                 break;
             case "!": if (erg.type == Type.booleanType)
@@ -521,89 +456,465 @@ class CastNode extends ExprNode {
     public Value runExpr() {
         Value erg = castNode.runExpr().copy();
         erg.type = castTo;
-        erg.d = erg.i;
+        //TODO
         return erg;
     }
 }
 
-class StateNode extends ExprNode {
-    Type stateOfNode;
-    ExprNode newStateNode;
+class CharNode extends ExprNode {
+    Token content;
 
-    public StateNode(ExprNode node, Type targetType, Token content, boolean accept) {
-        super(node.start, node.end);
-        newStateNode = node;
-        type = stateOfNode = targetType;
+    public CharNode(Token content) {
+        super(content, content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"Char: "+ content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.charType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.charType;
+        erg.c = content.content.charAt(0);
+        return erg;
+    }
+}
+
+class StringNode extends ExprNode {
+    Token content;
+
+    public StringNode(Token content) {
+        super(content, content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"String: "+ content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.stringType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.stringType;
+        erg.stg = content.content;
+        return erg;
+    }
+}
+
+class BoolNode extends ExprNode {
+    Token content;
+
+    public BoolNode(Token content) {
+        super(content, content);
+        this.content = content;
+    }
+    public String toString(String indent) {
+        return indent+"Boolean: "+ content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return type = Type.booleanType;
+    }
+    public Value runExpr() {
+        Value erg = new Value(); erg.type = Type.booleanType;
+        erg.b = Boolean.parseBoolean(content.content);
+        return erg;
+    }
+}
+
+
+//StateNode für den endlichen Automaten
+//In der runExpr wird mit einem Boolean-Flag geprüft, 
+//ob der State akzeptierend ist oder nicht
+class StateNode extends ExprNode{
+    boolean accept = false;
+    Token content;
+
+    public StateNode(Token content, boolean accept){
+        super(content,content);
+        this.content = content;
+        this.accept = accept;
+    }
+    public String toString(String indent){
+        return indent+"State "+content.content;
+    }
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors){
+        return type = Type.stateType;
+    }
+    public Value runExpr(){
+        Value erg = new Value();
+        erg.type = Type.stateType;
+        if(accept)
+            erg.s = new State(content.content,1);
+        else
+            erg.s = new State(content.content);
+        return erg;
+    }
+}
+
+
+class RangeNode extends ExprNode{
+    List<Pair<ExprNode,ExprNode>> entries;
+
+    public RangeNode(List<Pair<ExprNode,ExprNode>> entries) {
+        super(entries.get(0).getL().start,
+            ((entries.get(entries.size()-1).getR())!=null) ? entries.get(entries.size()-1).getR().end : entries.get(0).getL().end);
+        this.entries = entries;
     }
 
     @Override
     public String toString(String indent) {
-        return "StateNode";
+        String ret = indent+"Range: ";
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if(pair.getR() == null)
+                ret += "'"+pair.getL()+"' ";
+            else
+                ret += "'"+pair.getL()+"'-'"+pair.getR()+"' ";
+        }
+        return  ret;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return stateOfNode;
+        //Alle Pairs müssen Char sein
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if (pair.getL().semantischeAnalyseExpr(tabelle, errors) != Type.charType)
+                errors.add(new SemanticError(start,end,"range-expressions must be chars"));
+            if(pair.getR() != null)
+                if(pair.getR().semantischeAnalyseExpr(tabelle, errors) != Type.charType)
+                    errors.add(new SemanticError(start,end,"range-expressions must be chars"));
+        }
+        return type = Type.rangeType;
     }
     public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.d = erg.i;
+        Value erg = new Value(new Range());
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if(pair.getR() == null) 
+            {
+                erg.r.add(pair.getL().runExpr().c);
+            } else {
+                erg.r.add(pair.getL().runExpr().c, 
+                            pair.getR().runExpr().c);
+            }
+        }
         return erg;
     }
 }
 
-class RangeNode extends ExprNode {
-    Type stateOfNode;
-    ExprNode newStateNode;
-
-    public RangeNode(ExprNode node, Type targetType, Token content, boolean accept) {
-        super(node.start, node.end);
-        newStateNode = node;
-        type = stateOfNode = targetType;
-    }
-
-    @Override
-    public String toString(String indent) {
-        return "RangeNode";
-    }
-
-    @Override
-    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return stateOfNode;
-    }
-    public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.d = erg.i;
-        return erg;
-    }
-}
-
-
+//Transitionnode beinhaltet zwei Konstruktoren:
+//Normaler Übergang: StartState -- [Range] --> EndState
+//Epsilon-Übergang : StartState ---> EndState
+//Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
+//und zwischen EpsilonTransition und normaler Transition unterschieden
 class TransitionNode extends ExprNode {
-    Type stateOfNode;
-    ExprNode newStateNode;
+    ExprNode start = null;
+    ExprNode end = null;
+    ExprNode r = null;
 
-    public TransitionNode(ExprNode node, Type targetType, Token content, boolean accept) {
-        super(node.start, node.end);
-        newStateNode = node;
-        type = stateOfNode = targetType;
+    public TransitionNode(ExprNode start, ExprNode end, ExprNode r) {
+        super(start.start, end.end);
+        this.start = start;
+        this.end = end;
+        this.r = r;
+    }
+
+    public TransitionNode(ExprNode start, ExprNode end) {
+        super(start.start, end.end);
+        this.start = start;
+        this.end = end;
     }
 
     @Override
     public String toString(String indent) {
-        return "TransitionNode";
+        if(r == null){
+        return indent + "Transitionnode: $\""+ start.toString() +"\"--->$\"" + end.toString() + "\"";
+        } 
+        else{
+            return indent + "Transitionnode: $\""+ start.toString() +"\"--['" + r.toString() + "'-'"+ r.toString() + "'" + "]-->$\"" + end.toString() + "\"";
+        }
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return stateOfNode;
+        return Type.transitionType;
     }
     public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.d = erg.i;
+        Value erg;
+
+        if(r == null){
+            erg = new Value(new EpsilonTransition(start.runExpr().s, end.runExpr().s));
+        } 
+        else {
+            erg = new Value(new Transition(start.runExpr().s, end.runExpr().s, r.runExpr().r));
+        }
+        return erg;
+    }
+}
+
+
+//FiniteAutomataNode gibt einen FiniteAutomata mit einem StartState wieder.
+//Transitionen werden über den Parser an den FiniteAutomata gebunden
+class FiniteAutomataNode extends ExprNode{
+    StateNode start = null;
+
+    public FiniteAutomataNode(StateNode start) {
+        super(start.content, start.content);
+    }
+
+    @Override
+    public String toString(String indent) {
+        
+        return indent + "FiniteAutomataNode: <$\"" + start.content + ", {}>";
+    }
+    
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.finiteAutomataType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value(new FiniteAutomata(start.runExpr().s));
+        return erg;
+    }
+
+}
+
+
+
+
+class SetNode extends ExprNode {
+    Token type;
+    List<ExprNode> list;
+    
+    
+    public SetNode(Token type, List<ExprNode> list){
+        super(type, type);
+        this.type = type;
+        this.list = list;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "Set<" + type.content + "> = new HashSet<" + type.content + ">;" ;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        for (ExprNode i : list) {
+            if(i.type.toString() != type.content.toString())
+            {
+                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Set)"));
+                return Type.errorType;
+            }
+        }
+        return Type.setType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Set<Value> verified = new HashSet<Value>();
+        for(ExprNode i : list) {
+                Value zw = i.runExpr();
+                verified.add(zw);
+        }
+        Value erg = new Value(verified);
+
+      return erg;
+    }
+
+}
+
+class MapNode extends ExprNode {
+    Token type;
+    List<ExprNode> keyTypes;
+    List<ExprNode> valueTypes;
+
+    public MapNode(Token type, List<ExprNode> keyTypes, List<ExprNode> valueTypes){
+        super(type, type);
+        this.type = type;
+        this.keyTypes = keyTypes;
+        this.valueTypes = valueTypes;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "Map<" + keyTypes.get(0).type.toString() + "," + valueTypes.get(0).type.toString() + ">;" ;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        if(keyTypes.size() != valueTypes.size())
+        {
+            errors.add(new SemanticError(start, end, "Different Size between Map-KeyTypes and Map-ValueTypes"));
+        }
+
+        for (ExprNode i : keyTypes) {
+            if(i.type.toString() != type.content.toString())
+            {
+                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Map)"));
+                return Type.errorType;
+            }
+        }
+
+        for (ExprNode i : valueTypes) {
+            if(i.type.toString() != type.content.toString())
+            {
+                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Map)"));
+                return Type.errorType;
+            }
+        }
+        return Type.mapType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Map<Value, Value> verified = new HashMap<Value, Value>();
+        for(int i = 0; i < keyTypes.size(); i++)
+        {
+            Value key = keyTypes.get(i).runExpr();
+            Value valuetype = valueTypes.get(i).runExpr();
+            verified.put(key, valuetype);
+        }
+        Value erg = new Value(verified);    
+        return erg;
+    }
+
+}
+
+class ArrayNode extends ExprNode {
+    Token type;
+    List<ExprNode> list;
+    
+    
+    public ArrayNode(Token type, List<ExprNode> list){
+        super(type, type);
+        this.type = type;
+        this.list = list;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "Array";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.arrayType;
+    }
+
+    @Override
+    public Value runExpr() {
+        List<Value> verified = new ArrayList<Value>();
+        
+        for(ExprNode i : list) {
+            Value zw = i.runExpr();
+            verified.add(zw);
+                
+        }
+        Value erg = new Value(verified);
+      return erg;
+    }
+
+}
+
+abstract class RegularExpressionNode extends ExprNode {
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+
+    public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left.start, right.end);
+    }
+    
+}
+
+class OrNode extends RegularExpressionNode {
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+    
+    public OrNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
+    }
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Or:" + left.start.content + "|" + right.end.content;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.orType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value orLeft = left.runExpr();
+        Value orRight = right.runExpr();
+        erg.re = new Or(orLeft.re, orRight.re);
+        return erg;
+    }
+}
+
+class ConcatNode extends RegularExpressionNode {
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+
+
+    public ConcatNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Concat:" + left.start.content + right.end.content;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.concatType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value orLeft = left.runExpr();
+        Value orRight = right.runExpr();
+        erg.re = new Concat(orLeft.re, orRight.re);
+        return erg;
+    }
+
+    
+    
+}
+
+
+class RangeExprNode extends RegularExpressionNode {
+
+    RangeNode r;
+
+    public RangeExprNode(RangeNode r) {
+        super(r.);
+        this.r = r;
+    }
+    @Override
+    public String toString(String indent) {
+        
+        return null;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.regularExpressionType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        erg.type = Type.orType;
+        erg.or = new Or(r.content);
         return erg;
     }
 }

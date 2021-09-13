@@ -1,0 +1,5 @@
+
+Range c;
+c = ['g'-'x'];
+print c;
+

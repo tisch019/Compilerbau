@@ -4,15 +4,28 @@ public class Type {
         this.name = name;
     }
 
-    public static Type doubleType = new Type("double");
+    public static Type charType = new Type("char");
+    public static Type stringType = new Type("String");
     public static Type intType = new Type("int");
     public static Type booleanType = new Type("boolean");
+    public static Type arrayType = new Type("array");
     public static Type errorType = new Type("error");
-    public static Type stateType = new Type("state");
-    public static Type rangeType = new Type("range");
-    public static Type transitionTape = new Type("transition");
-    public static Type finiteAutomataType = new Type("finiteAutomata");
-    public static Type regularExpressionType = new Type("regularExpression");
+    public static Type stateType = new Type("State");
+    public static Type rangeType = new Type("Range");
+    public static Type transitionType = new Type("Transition");
+    public static Type epsilonTransitionType = new Type("epsilonTransition");
+    public static Type finiteAutomataType = new Type("FA");
+    public static Type regularExpressionType = new Type("RE");
+    public static Type setType = new Type("Set");
+    public static Type mapType = new Type("Map");
+
+    //RE-Types aus der Klasse RegularExpression.java
+    public static Type orType = new Type("Or");
+    public static Type concatType = new Type("Concat");
+    public static Type starType = new Type("Star");
+    public static Type rangeExprType = new Type("RangeExpr");
+    public static Type emptyWordType = new Type("EmptyWord");
+
 
     public String toString() {
         return name;
@@ -21,22 +34,30 @@ public class Type {
     public static Type getType(String name) {
         switch(name)
         {
-            case("double"):
-                return doubleType;
+            case("char"):
+                return charType;
+            case("string"):
+                return stringType;
             case("int"):
                 return intType;
             case("boolean"):
                 return booleanType;
-            case("state"):
+            case("State"):
                 return stateType;
-            case("range"):
+            case("Range"):
                 return rangeType;
-            case("transition"):
-                return transitionTape;
-            case("finiteAutomata"):
+            case("Transition"):
+                return transitionType;
+            case("epsilonTransition"):
+                return epsilonTransitionType;
+            case("FA"):
                 return finiteAutomataType;
-            case("regularExpression"):
+            case("RE"):
                 return regularExpressionType;
+            case("Set"):
+                return setType;
+            case("Map"):
+                return mapType;
             default:
                 return errorType;
         }
@@ -45,18 +66,15 @@ public class Type {
     public static boolean canCast(Type t1, Type t2) {
         if (t1==errorType || t2==errorType) return true;
         if (t1==t2) return true;
-        else if (t1==intType && t2==doubleType) return true;
         else if (t1 == finiteAutomataType && t2 == regularExpressionType) return true;
         else return false;
     }
     public static Type kgT(Type t1, Type t2) {
         if (t1==errorType || t2==errorType) return errorType;
         if (t1==t2) return t1;
-        else if (t1==doubleType && t2==intType) return doubleType;
-        else if (t1==intType && t2==doubleType) return doubleType;
         else if (t1==finiteAutomataType && t2==regularExpressionType) return finiteAutomataType; //fa + ra = fa
         else if (t1==regularExpressionType && t2==finiteAutomataType) return finiteAutomataType; //ra + fa = fa
-        else if (t1==finiteAutomataType && t2==transitionTape) return finiteAutomataType; // fa + transition = fa
+        else if (t1==finiteAutomataType && t2==transitionType) return finiteAutomataType; // fa + transition = fa
         else return errorType;
     }
 }

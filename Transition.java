@@ -1,4 +1,4 @@
-package Bibliothek;
+
 
 public class Transition extends AbstractTransition {
     private Range range;
