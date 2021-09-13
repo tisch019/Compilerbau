@@ -809,8 +809,8 @@ class ArrayNode extends ExprNode {
         List<Value> verified = new ArrayList<Value>();
         
         for(ExprNode i : list) {
-                Value zw = i.runExpr();
-               verified.add(zw);
+            Value zw = i.runExpr();
+            verified.add(zw);
                 
         }
         Value erg = new Value(verified);
@@ -830,7 +830,8 @@ abstract class RegularExpressionNode extends ExprNode {
 }
 
 class OrNode extends RegularExpressionNode {
-
+    RegularExpressionNode left;
+    RegularExpressionNode right;
     
     public OrNode(RegularExpressionNode left, RegularExpressionNode right) {
         super(left, right);
@@ -839,22 +840,56 @@ class OrNode extends RegularExpressionNode {
     }
     @Override
     public String toString(String indent) {
-        
-        return null;
+        return indent + "RE-Or:" + left.start.content + "|" + right.end.content;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return Type.regularExpressionType;
+        return Type.orType;
     }
 
     @Override
     public Value runExpr() {
         Value erg = new Value();
-        erg.type = Type.orType;
-        erg.or = new Or(left, right);
+        Value orLeft = left.runExpr();
+        Value orRight = right.runExpr();
+        erg.re = new Or(orLeft.re, orRight.re);
         return erg;
     }
+}
+
+class ConcatNode extends RegularExpressionNode {
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+
+
+    public ConcatNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Concat:" + left.start.content + right.end.content;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.concatType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value orLeft = left.runExpr();
+        Value orRight = right.runExpr();
+        erg.re = new Concat(orLeft.re, orRight.re);
+        return erg;
+    }
+
+    
+    
 }
 
 
@@ -862,8 +897,8 @@ class RangeExprNode extends RegularExpressionNode {
 
     RangeNode r;
 
-    public RangeExprNode( RangeNode r) {
-        super(r, r);
+    public RangeExprNode(RangeNode r) {
+        super(r.);
         this.r = r;
     }
     @Override
