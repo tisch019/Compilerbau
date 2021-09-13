@@ -80,4 +80,12 @@ public class Token
     int index;
     int line, column;
 
+    boolean isKeyType(){
+        return (kind == Type.KEYBOOL || kind == Type.KEYCHAR
+                || kind == Type.KEYINT || kind == Type.KEYSTRING
+                || kind == Type.KEYFA || kind == Type.KEYMAP
+                || kind == Type.KEYRA || kind == Type.KEYRANGE
+                || kind == Type.KEYSET || kind == Type.KEYSTATE
+                || kind == Type.KEYTRANSITION);
+    }
 }

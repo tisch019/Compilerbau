@@ -6,8 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 
-import Bibliothek.*;
-
 
 //Abstrakte Klassen für alle folgenden Node-Typen
 public abstract class Node {
@@ -809,8 +807,8 @@ class ArrayNode extends ExprNode {
         List<Value> verified = new ArrayList<Value>();
         
         for(ExprNode i : list) {
-                Value zw = i.runExpr();
-               verified.add(zw);
+            Value zw = i.runExpr();
+            verified.add(zw);
                 
         }
         Value erg = new Value(verified);
@@ -819,15 +817,114 @@ class ArrayNode extends ExprNode {
 
 }
 
-class RegularExpressionNode extends ExprNode {
-    String operation = null;
+abstract class RegularExpressionNode extends ExprNode {
     RegularExpressionNode left;
     RegularExpressionNode right;
 
     public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
         super(left.start, right.end);
     }
+    
+}
 
+class OrNode extends RegularExpressionNode {
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+    
+    public OrNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
+    }
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Or:" + left.start.content + "|" + right.end.content;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.orType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value orLeft = left.runExpr();
+        Value orRight = right.runExpr();
+        erg.re = new Or(orLeft.re, orRight.re);
+        return erg;
+    }
+}
+
+class ConcatNode extends RegularExpressionNode {
+    RegularExpressionNode left;
+    RegularExpressionNode right;
+
+
+    public ConcatNode(RegularExpressionNode left, RegularExpressionNode right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Concat:" + left.start.content + right.end.content;
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.concatType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value orLeft = left.runExpr();
+        Value orRight = right.runExpr();
+        erg.re = new Concat(orLeft.re, orRight.re);
+        return erg;
+    }
+
+}
+
+class StarNode extends RegularExpressionNode {
+    RegularExpressionNode regEx;
+
+    public StarNode(RegularExpressionNode regEx) {
+        super(regEx, regEx);
+        this.regEx = regEx;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Star:" + regEx.toString() + "*";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.starType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value rest = regEx.runExpr();
+        erg.re = new Star(rest.re);
+        return erg;
+    }
+
+}
+
+
+
+class RangeExprNode extends RegularExpressionNode {
+    RangeNode ra;
+
+    public RangeExprNode(RangeNode ra) {
+        super(ra);
+        this.ra = ra;
+    }
     @Override
     public String toString(String indent) {
         
@@ -836,17 +933,13 @@ class RegularExpressionNode extends ExprNode {
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return Type.regularExpressionType;
+        return Type.rangeExprType;
     }
 
     @Override
     public Value runExpr() {
-        //Value erg;
-        if(operation == "or")
-        {
-           // erg = new Value(new )
-        }
-        return null;
+        Value erg = new Value();
+        erg.rExpr = new RangeExpr(ra.runExpr().r);
+        return erg;
     }
-    
 }

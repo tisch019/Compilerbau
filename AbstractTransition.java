@@ -1,4 +1,4 @@
-package Bibliothek;
+
 
 public abstract class AbstractTransition {
    private State start, end;
