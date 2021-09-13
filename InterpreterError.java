@@ -1,4 +1,3 @@
-
 public class InterpreterError extends Exception {
     String message;
     public InterpreterError(String msg) {

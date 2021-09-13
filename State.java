@@ -1,5 +1,3 @@
-
-
 public class State {
     String label;
     int accept;

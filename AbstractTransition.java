@@ -1,5 +1,3 @@
-
-
 public abstract class AbstractTransition {
    private State start, end;
    public AbstractTransition(State s, State e) {

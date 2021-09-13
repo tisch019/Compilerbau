@@ -1,5 +1,3 @@
-
-
 import java.util.LinkedList;
 
 class BasicRange { // Abschnitte von Buchstaben ohne Lücken
