@@ -888,18 +888,44 @@ class ConcatNode extends RegularExpressionNode {
         return erg;
     }
 
-    
-    
+}
+
+class StarNode extends RegularExpressionNode {
+    RegularExpressionNode regEx;
+
+    public StarNode(RegularExpressionNode regEx) {
+        super(regEx, regEx);
+        this.regEx = regEx;
+    }
+
+    @Override
+    public String toString(String indent) {
+        return indent + "RE-Star:" + regEx.toString() + "*";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.starType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        Value rest = regEx.runExpr();
+        erg.re = new Star(rest.re);
+        return erg;
+    }
+
 }
 
 
+
 class RangeExprNode extends RegularExpressionNode {
+    RangeNode ra;
 
-    RangeNode r;
-
-    public RangeExprNode(RangeNode r) {
-        super(r.);
-        this.r = r;
+    public RangeExprNode(RangeNode ra) {
+        super(ra);
+        this.ra = ra;
     }
     @Override
     public String toString(String indent) {
@@ -909,14 +935,13 @@ class RangeExprNode extends RegularExpressionNode {
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return Type.regularExpressionType;
+        return Type.rangeExprType;
     }
 
     @Override
     public Value runExpr() {
         Value erg = new Value();
-        erg.type = Type.orType;
-        erg.or = new Or(r.content);
+        erg.rExpr = new RangeExpr(ra.runExpr().r);
         return erg;
     }
 }
