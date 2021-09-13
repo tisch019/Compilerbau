@@ -484,6 +484,16 @@ public class Lexer {
                             t.kind = Token.Type.RE_MARK;
                             state = 100;
                             break;
+                        case ',':
+                            mark();
+                            t.kind = Token.Type.RE_COMMA;
+                            state = 100;
+                            break;
+                        case '!':
+                            mark();
+                            t.kind = Token.Type.RE_NOT;
+                            state = 100;
+                            break;
                         case '/':
                             mark();
                             if(getNextChar()=='>') {
@@ -496,6 +506,13 @@ public class Lexer {
                                 logger.info("Error in Lexer at case 50 in Regex / case. Wrong char after /");
                             }
                             state = 100;
+                            break;
+                        case ' ':
+                        case '\t':
+                        case '\n':
+                        case '\r':
+                            mark();
+                            start = current;
                             break;
                         default:
                             if (isChar(nextChar)) {
