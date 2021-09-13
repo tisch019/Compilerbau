@@ -130,6 +130,7 @@ public class Lexer {
                             mark();
                             t.kind = Token.Type.STATE;
                             state = 5;
+                            start++;
                             break;
                         case '!':
                             mark();
@@ -155,6 +156,7 @@ public class Lexer {
                             mark();
                             t.kind = Token.Type.STRING;
                             state = 21;
+                            start++;
                             break;
                         case '\'':
                             mark();
@@ -223,6 +225,7 @@ public class Lexer {
                     if (nextChar == '"') {
                         mark();
                         state = 6;
+                        start++;
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
@@ -246,10 +249,11 @@ public class Lexer {
                         mark();
                     }
                     else if(nextChar == '"'){
-                        mark();
                         state = 9;
+                        startOffset++;
                     } else {
                         mark();
+                        startOffset = 0;
                         t.kind = Token.Type.ERROR;
                         state = 100;
                         logger.info("Error in Lexer at case 9");
@@ -257,19 +261,20 @@ public class Lexer {
                     break;
                 case 9:
                     if (nextChar == '^') {
-                        mark();
                         state = 10;
                         t.kind = Token.Type.STATEACC;
+                        startOffset++;
                     } else {
                         state = 100;
                     }
                     break;
                 case 10:
                     if (nextChar == '1') {
-                        mark();
+                        startOffset++;
                         state = 100;
                     } else {
                         mark();
+                        startOffset = 0;
                         t.kind = Token.Type.ERROR;
                         state = 100;
                         logger.info("Error in Lexer at case 10");
@@ -332,7 +337,7 @@ public class Lexer {
                 // Case 21 STRING
                 case 21:
                     if (nextChar == '"') {
-                        mark();
+                        startOffset++;
                         state = 100;
                     } else {
                         mark();
@@ -351,7 +356,7 @@ public class Lexer {
                     break;
                 case 23:
                     if (nextChar == '\'') {
-                        startOffset=1;
+                        startOffset++;
                         state = 100;
                     } else {
                         mark();

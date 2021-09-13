@@ -46,10 +46,7 @@ public class Token
         TRANSEND,       // -->
         TRANSEPSI,      // --->
         FASTART,        // <
-        FAREGEXSTART,   // </
         FAEND,          // >
-        FAREGEXEND,     // />
-        RA,             // /.../
         SET,            // {...} von BLOCKSTART zu unterscheiden
         TYPE,           // Bsp. Map<type1,type2> braucht Type Token
         MAPDELI,        // :
@@ -60,6 +57,8 @@ public class Token
         EOF,            // End des Streams / Quelldatei
 
         //Token für Reguläre Ausdrücke
+        FAREGEXSTART,   // </
+        FAREGEXEND,     // />
         RE_BRACKETOPEN, // (
         RE_BRACKETCLOSE,// )
         RE_MARK,        // "
