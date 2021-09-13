@@ -501,8 +501,8 @@ public class Lexer {
                                 t.kind = Token.Type.RE_SBCLOSE;
                                 inRegex = false;
                             } else {
+                                mark();
                                 t.kind = Token.Type.ERROR;
-                                inRegex = false;
                                 logger.info("Error in Lexer at case 50 in Regex / case. Wrong char after /");
                             }
                             state = 100;
