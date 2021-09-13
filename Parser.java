@@ -1,12 +1,9 @@
-import Bibliothek.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.util.ElementScanner14;
 
 public class Parser {
     Filter filter;
@@ -463,9 +460,9 @@ public class Parser {
             List<Pair<ExprNode,ExprNode>> entries = new ArrayList<Pair<ExprNode,ExprNode>>();
             while(filter.getToken().kind != Token.Type.SQUAREBRACKETCLOSE){
                 if(filter.getToken(1).kind == Token.Type.POP){ // -
-                    ExprNode l = expr(synco);
+                    ExprNode l = atom(synco);
                     filter.matchToken(); // -
-                    ExprNode r = expr(synco);
+                    ExprNode r = atom(synco);
                     range = new Pair<ExprNode,ExprNode>(l,r);
                 }else{
                     range = new Pair<ExprNode,ExprNode>(expr(synco),null);

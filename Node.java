@@ -6,8 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 
-import Bibliothek.*;
-
 
 //Abstrakte Klassen für alle folgenden Node-Typen
 public abstract class Node {
