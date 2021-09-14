@@ -75,7 +75,7 @@ public class Value {
     public Value(Set<Value> st) { type = Type.setType; this.st = st;}
     public Value(Map<Value,Value> mp) { type = Type.setType; this.mp = mp;}
     public Value(List<Value> ar) { type = Type.arrayType; this.ar = ar;}
-    public Value(Value c) { type = c.type; this.c =c.c; stg=c.stg; b=c.b; i=c.i; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp; ar=c.ar; va=c.va; or = c.or; con = c.con; star = c.star; rExpr=c.rExpr; eWord=c.eWord;}
+    public Value(Value c) { type = c.type; this.c =c.c; stg=c.stg; b=c.b; i=c.i; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp; ar=c.ar; va=c.va;}
 
     //RE-Values
     //public Value(Or or) {type = Type.orType; this.or = or;}
