@@ -415,7 +415,7 @@ public class Parser {
         ExprNode res = null;
 
         try {
-            res = atom(sync);
+            res = transition(sync);
         } catch (ParserError error) {
             if (filter.getToken().kind == Token.Type.LOP) ;
             else throw error;
@@ -426,6 +426,32 @@ public class Parser {
             ExprNode left = res;
             ExprNode right = atom(synco);
             res = new BinOpNode(op,left,right);
+        }
+        return res;
+    }
+
+    // transition = { sum { -- sum --> atom }}
+    ExprNode transition(Set<Token.Type> synco) throws IOException, ParserError{
+        Set<Token.Type> sync =  new HashSet<>(synco);
+
+        ExprNode res = null;
+
+        try{
+            res = atom(sync);
+        }catch(ParserError error){
+            //keine Ahnung
+        }
+        if(filter.getToken().kind == Token.Type.TRANSSTART){
+            filter.matchToken(); // --
+            ExprNode r = expr(synco); // Range
+            filter.matchToken(Token.Type.TRANSEND,synco); // -->
+            ExprNode stateB = atom(synco); //State
+            res = new TransitionNode(res,r,stateB);
+        }
+        else if(filter.getToken().kind == Token.Type.TRANSEPSI){
+            filter.matchToken(); // --->
+            ExprNode stateB = atom(synco); //State
+            res = new TransitionNode(res,stateB);
         }
         return res;
     }
@@ -516,23 +542,7 @@ public class Parser {
             else
                 stateA = new StateNode(content,false);
 
-                if(filter.getToken().kind == Token.Type.TRANSSTART){
-                    //Trans = STATE TRANSSTART RANGE TRANSEND STATE
-                    filter.matchToken(); // --
-                    ExprNode r = expr(synco);
-                    filter.matchToken(Token.Type.TRANSEND,synco); // -->
-                    ExprNode stateB = expr(synco);
-                    res = new TransitionNode(stateA,r,stateB);
-                }
-                else if(filter.getToken().kind == Token.Type.TRANSEPSI){
-                    //TransEpsi = STATE TRANSEPSI STATE
-                    filter.matchToken(); // --->
-                    ExprNode stateB = expr(synco);
-                    res = new TransitionNode(stateA,stateB);
-                }
-                else{ //No Transition but State
-                    res = stateA;
-            }
+            res = stateA;
         }
         //TODO RA
         //TODO FA
