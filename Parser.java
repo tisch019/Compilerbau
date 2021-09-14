@@ -544,7 +544,10 @@ public class Parser {
 
             res = stateA;
         }
-        //TODO RA
+        else if (filter.getToken().kind == Token.Type.LOP){
+            filter.matchToken();
+            res = RA(synco);
+        }
         //TODO FA
         //TODO SET
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
@@ -569,6 +572,134 @@ public class Parser {
             while (!synco.contains(filter.getToken().kind)) filter.matchToken();
             throw error;
         }
+        return res;
+    }
+
+    // "abc" Wort
+    // ['a','b'-'c'] Range
+    // () Klammer
+    // Klammer * + ?
+    // Wort | Wort
+    // Bsp. ( "abc" | ['A'-'Z'] )*
+    // Bsp. /"hello" ("world")? ['?','!']/
+
+    /*  
+        RA -> Or
+        Or -> Concat ("|" Concat)*
+        Concat -> Star (Star)*
+        Star -> RegAtom { "*" | "+" | "?" }
+        Atom -> <RegLiteral> | "(" Or ")" | "[" <RegLiteral> "-" <RegLiteral> "]"
+    */
+
+    // RA -> Or
+    RegularExpressionNode RA(Set<Token.Type> synco) throws IOException, ParserError{
+        Set<Token.Type> sync =  new HashSet<>(synco);
+        sync.add(Token.Type.LOP);
+
+        RegularExpressionNode res;
+
+        res = or(sync);
+
+        filter.matchToken(Token.Type.LOP, sync);
+
+        return res;
+    }
+
+    // Or -> Concat ("|" Concat)*
+    RegularExpressionNode or(Set<Token.Type> synco) throws IOException, ParserError{
+        RegularExpressionNode res;
+    
+        res = concat(synco);
+
+        while(filter.getToken().kind == Token.Type.RE_OR){
+            filter.matchToken();
+            RegularExpressionNode reB = concat(synco);
+            RegularExpressionNode reA = res;
+            res = new OrNode(reA,reB);
+        }
+
+        return res;
+    }
+
+    // Concat -> Star (Star)*
+    RegularExpressionNode concat(Set<Token.Type> synco) throws IOException, ParserError{
+        RegularExpressionNode res;
+
+        res = star(synco);
+
+        while(filter.getToken().kind != Token.Type.LOP){
+            RegularExpressionNode reB = star(synco);
+            RegularExpressionNode reA = res;
+            res = new ConcatNode(reA,reB);
+        }
+
+        return res;
+    }
+
+    // Star -> RegAtom { "*" | "+" | "?" }
+    RegularExpressionNode star(Set<Token.Type> synco) throws IOException, ParserError{
+        RegularExpressionNode res;
+
+        res = regatom(synco);
+
+        if(filter.getToken().kind == Token.Type.RE_COVER){ // *
+            RegularExpressionNode e = res;
+            res = new StarNode(e);
+        }else if(filter.getToken().kind == Token.Type.RE_OPT){ // ?
+            //Kleen: e | empty
+            RegularExpressionNode e = res;
+            res = new OrNode(e, new EmptyWordNode()); 
+        }else if(filter.getToken().kind == Token.Type.RE_PLUS){ // +
+            //PosKleen: e concat e*
+            RegularExpressionNode e = res;
+            StarNode star = new StarNode(e);
+            res = new ConcatNode(e,star);
+        }
+
+        return res;
+    }
+
+    //RegAtom -> <RegLiteral> | "(" Or ")" | "[" <RegLiteral> "-" <RegLiteral> "]"
+    RegularExpressionNode regatom(Set<Token.Type> sync) throws IOException, ParserError{
+        RegularExpressionNode res;
+
+        if(filter.getToken().kind == Token.Type.RE_MARK){
+            filter.matchToken();
+            List<Pair<Token,Token>> entries = new ArrayList<Pair<Token,Token>>();
+            Token ra;
+            while(filter.getToken().kind != Token.Type.RE_MARK){
+                ra = filter.getToken();
+                filter.matchToken(Token.Type.RE_CHAR, sync);
+                entries.add(new Pair<Token,Token>(ra, null));
+            }
+            filter.matchToken();
+            res = new RangeExprNode(entries);
+        }else if(filter.getToken().kind == Token.Type.RE_BRACKETOPEN){
+            filter.matchToken();
+            res = or(sync);
+            filter.matchToken(Token.Type.RE_BRACKETCLOSE, sync);
+        }else if(filter.getToken().kind == Token.Type.RE_SBOPEN){
+            filter.matchToken();
+            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
+            Token raA = filter.getToken();
+            filter.matchToken(Token.Type.RE_CHAR, sync);
+            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
+            filter.matchToken(Token.Type.RE_RANGE, sync);
+            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
+            Token raB = filter.getToken();
+            filter.matchToken(Token.Type.RE_CHAR, sync);
+            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
+            filter.matchToken(Token.Type.RE_SBCLOSE, sync);
+            List<Pair<Token,Token>> entry = new ArrayList<Pair<Token,Token>>();
+            entry.add(new Pair<Token,Token>(raA,raB));
+            res = new RangeExprNode(entry);
+        }else{
+            Token currentToken = filter.getToken();
+            ParserError error = new ParserError(currentToken, "REGEX Parser error");
+            errors.add(error);
+            throw error;
+        }
+
         return res;
     }
 }
