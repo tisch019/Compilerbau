@@ -476,7 +476,8 @@ public class Parser {
         }
         else if(filter.getToken().kind == Token.Type.MAPARRAYSTART){
             if(filter.getToken(1).kind == Token.Type.MAPDELI){
-                //Map Element:Value
+                //Map
+                //Element:Value
                 List<Pair<ExprNode,ExprNode>> elements = new ArrayList<Pair<ExprNode,ExprNode>>();
                 Pair<ExprNode,ExprNode> pair;
                 while(filter.getToken().kind != Token.Type.MAPARRAYEND){
@@ -503,7 +504,8 @@ public class Parser {
                 //res = new ArrayNode(elements);
             }
         }
-        else if (filter.getToken().kind == Token.Type.STATE){
+        else if (filter.getToken().kind == Token.Type.STATE
+                    || filter.getToken().kind == Token.Type.STATEACC){
             StateNode stateA;
             Token content = filter.getToken();
             filter.matchToken();
