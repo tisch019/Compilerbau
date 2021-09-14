@@ -275,7 +275,10 @@ class EmptyStmntNode extends StmntNode {
 }
 
 
-
+/**
+ * Besteht aus drei Nodes:
+ * Ifnode: if(expr) {stmnt} else {elseStmnt}
+ */
 class IfNode extends StmntNode {
     ExprNode expr;
     StmntNode stmnt;
@@ -287,12 +290,18 @@ class IfNode extends StmntNode {
         this.stmnt = stmnt;
         this.elseStmnt = elseStmnt;
     }
+
     public String toString(String indent) {
         return indent+"IfStatement\n"
                 +expr.toString(indent+"\t")+"\n"
                 +stmnt.toString(indent+"\t")
                 + (elseStmnt!=null ? "\n"+elseStmnt.toString(indent+"\t") : "");
     }
+
+    /**
+     * Semantische Analyse: Prüfung auf boolean in der Expression (expr) für die if-Anweisung
+     * und Analyse des else-Statements, wenn vorhanden
+     */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         if (expr.semantischeAnalyseExpr(tabelle,errors) != Type.booleanType)
         {
@@ -301,6 +310,11 @@ class IfNode extends StmntNode {
         stmnt.semantischeAnalyse(tabelle, errors);
         if (elseStmnt!=null) elseStmnt.semantischeAnalyse(tabelle, errors);
     }
+
+    /**
+     * Auswertung der Expression und eventuelle Auswertung des Statements oder 
+     * andernfalls des else-Statements, falls vorhanden
+     */
     public void run() {
         Value bed = expr.runExpr();
         if (bed.b) stmnt.run();
@@ -308,6 +322,11 @@ class IfNode extends StmntNode {
     }
 }
 
+
+/**
+ * Enthält zwei Nodes:
+ * WhileNode: while(expr) {stmnt}
+ */
 class WhileNode extends StmntNode {
     ExprNode expr;
     StmntNode stmnt;
@@ -322,6 +341,11 @@ class WhileNode extends StmntNode {
                 +expr.toString(indent+"\t")+"\n"
                 +stmnt.toString(indent+"\t");
     }
+
+    /**
+     * Analyse, ob Expression-Node (expr) vom Typ Boolean ist, wenn true, dann Analyse des Statement-Nodes,
+     * Andernfalls Hinzufügen eines semantischen Fehlers
+     */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         if (expr.semantischeAnalyseExpr(tabelle, errors) != Type.booleanType)
         {
@@ -329,14 +353,24 @@ class WhileNode extends StmntNode {
         }
         stmnt.semantischeAnalyse(tabelle, errors);
     }
+
+    /**
+     * Auswertung der Expression und eventuelle Auswertung des StatementNodes
+     */
     public void run() {
         Value bed = expr.runExpr();
         while (bed.b) stmnt.run();
     }
 }
 
+
+/**
+ * Beschreibung eines Blocks in der Skriptsprache durch eine
+ * Liste an Nodes (Deklarationen und Statements)
+ */
 class BlockNode extends StmntNode {
     List<Node> declAndStmnts =  new LinkedList<>();
+
     public BlockNode(Token start, Token end) {
         super(start, end);
     }
@@ -348,14 +382,24 @@ class BlockNode extends StmntNode {
         for (Node node:declAndStmnts) res += "\n"+node.toString(indent+"\t");
         return res;
     }
+
+    /**
+     * Erzeugen einer lokalen Symboltabelle mit Aufruf der 
+     * semantischen Analyse der einzelnen Nodes der Liste
+     */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         SymbolTabelle lokal = new SymbolTabelle(tabelle);
         for (Node node: declAndStmnts) node.semantischeAnalyse(lokal, errors);
     }
+
+    /**
+     * Aufruf der run-Methode jedes einzelnen Nodes in der Liste
+     */
     public void run() {
         for (Node node: declAndStmnts) node.run();
     }
 }
+
 
 class ExprStmntNode extends StmntNode {
     ExprNode expr;
@@ -571,6 +615,9 @@ class CastNode extends ExprNode {
     }
 }
 
+/**
+ * Knoten eines einzelnen Char-Zeichens, welcher in einem Token enthalten ist
+ */
 class CharNode extends ExprNode {
     Token content;
 
@@ -578,12 +625,25 @@ class CharNode extends ExprNode {
         super(content, content);
         this.content = content;
     }
+
+    /**
+     * Ausgabe des char-Zeichens
+     */
     public String toString(String indent) {
         return indent+"Char: "+ content.content;
     }
+
+    /**
+     * Rückgabe des Typs charType in der semantischen Analyse, 
+     * da ein Zeichen nicht weiter zerlegt werden kann
+     */
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         return type = Type.charType;
     }
+
+    /**
+     * Erzeugung eines Value mit dem Inhalt des Tokens content an der Stelle 0 
+     */
     public Value runExpr() {
         Value erg = new Value(); erg.type = Type.charType;
         erg.c = content.content.charAt(0);
@@ -591,6 +651,12 @@ class CharNode extends ExprNode {
     }
 }
 
+
+/**
+ * Identisch zum Char-Node, 
+ * wobei in der runExpr der gesamte Inhalt des Tokens content in ein Value gepackt wird
+ * mit dem Typ stringType
+ */
 class StringNode extends ExprNode {
     Token content;
 
@@ -611,6 +677,12 @@ class StringNode extends ExprNode {
     }
 }
 
+
+/**
+ * Identisch zum CharNode, wobei in der runExpr 
+ * der Inhalt des Tokens content in ein Boolean geparst wird
+ * mit dem Typ booleanType
+ */
 class BoolNode extends ExprNode {
     Token content;
 
@@ -639,17 +711,35 @@ class StateNode extends ExprNode{
     boolean accept = false;
     Token content;
 
+    /**
+     * Konstruktor des StateNodes
+     * @param content Name des States
+     * @param accept Akzeptierend (1) oder nicht (0)
+     */
     public StateNode(Token content, boolean accept){
         super(content,content);
         this.content = content;
         this.accept = accept;
     }
     public String toString(String indent){
-        return indent+"State "+content.content;
+        if(accept) {
+        return indent+"State: "+content.content + "(akzeptierend)";
+        } else {
+            return indent+"State: "+content.content + "(nicht akzeptierend)";
+        }
     }
+
+    /**
+     * Rückgabe des Typs stateType
+     */
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors){
         return type = Type.stateType;
     }
+
+    /**
+     * Erzeugung eines State-Objektes in einem Value-Objekt
+     * @return Value-Objekt mit State-Objekt als Inhalt
+     */
     public Value runExpr(){
         Value erg = new Value();
         erg.type = Type.stateType;
@@ -661,7 +751,9 @@ class StateNode extends ExprNode{
     }
 }
 
-
+/**
+ * 
+ */
 class RangeNode extends ExprNode{
     List<Pair<ExprNode,ExprNode>> entries;
 
