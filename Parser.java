@@ -665,15 +665,17 @@ public class Parser {
 
         if(filter.getToken().kind == Token.Type.RE_MARK){
             filter.matchToken();
-            List<Pair<Token,Token>> entries = new ArrayList<Pair<Token,Token>>();
-            Token ra;
+            Token first = filter.getToken();
+            filter.matchToken(Token.Type.RE_CHAR, sync);
+            res = new RangeExprNode(first,null);
+            Token next = null;
             while(filter.getToken().kind != Token.Type.RE_MARK){
-                ra = filter.getToken();
+                next = filter.getToken();
                 filter.matchToken(Token.Type.RE_CHAR, sync);
-                entries.add(new Pair<Token,Token>(ra, null));
+                RegularExpressionNode temp = res;
+                res = new ConcatNode(temp, new RangeExprNode(next,null));
             }
             filter.matchToken();
-            res = new RangeExprNode(entries);
         }else if(filter.getToken().kind == Token.Type.RE_BRACKETOPEN){
             filter.matchToken();
             res = or(sync);
@@ -690,9 +692,7 @@ public class Parser {
             filter.matchToken(Token.Type.RE_CHAR, sync);
             filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
             filter.matchToken(Token.Type.RE_SBCLOSE, sync);
-            List<Pair<Token,Token>> entry = new ArrayList<Pair<Token,Token>>();
-            entry.add(new Pair<Token,Token>(raA,raB));
-            res = new RangeExprNode(entry);
+            res = new RangeExprNode(raA,raB);
         }else{
             Token currentToken = filter.getToken();
             ParserError error = new ParserError(currentToken, "REGEX Parser error");
