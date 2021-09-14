@@ -336,7 +336,7 @@ class BinOpNode extends ExprNode {
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         Type leftT = left.semantischeAnalyseExpr(tabelle, errors);
         Type rightT = right.semantischeAnalyseExpr(tabelle, errors);
-        if (leftT!=rightT) {
+        if (!(leftT.equals(rightT))) {
             if (leftT == Type.kgT(leftT, rightT))
                 right = new CastNode(right, Type.kgT(leftT, rightT));
             else left = new CastNode(left, Type.kgT(leftT, rightT));

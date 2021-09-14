@@ -1,5 +1,9 @@
+import java.util.*;
+
 public class Type {
-     String name;
+    String name;
+    List<Type> genericTypes = new ArrayList<Type>();
+
     public Type(String name) {
         this.name = name;
     }
@@ -76,5 +80,31 @@ public class Type {
         else if (t1==regularExpressionType && t2==finiteAutomataType) return finiteAutomataType; //ra + fa = fa
         else if (t1==finiteAutomataType && t2==transitionType) return finiteAutomataType; // fa + transition = fa
         else return errorType;
+    }
+
+    public void addGenTyp(Type t){
+        genericTypes.add(t);
+    }
+
+    public Type copy(){
+        return new Type(this.name);
+    }
+    
+    @Override
+    public boolean equals(Object obj){
+        Type t = (Type) obj;
+        boolean ret = false;
+        if(t.name == this.name)
+            ret = true;
+        if(t.genericTypes.size() == this.genericTypes.size()){
+            for(int i = 0; i<t.genericTypes.size();i++){
+                if(t.genericTypes.get(i) == this.genericTypes.get(i))
+                    ret = true;
+                else
+                    return false;
+            }
+        }else
+            return false;
+        return ret;
     }
 }
