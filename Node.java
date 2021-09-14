@@ -7,21 +7,49 @@ import java.util.List;
 import java.util.ArrayList;
 
 
-//Abstrakte Klassen für alle folgenden Node-Typen
+//Abstrakte Klassen für alle folgenden Node-Typen zur Erstellung des AST
+//Die abstrakte Klasse Node ist die Oberklasse aller Knotenpunkte im AST
 public abstract class Node {
     Token start, end;
 
+    /**
+     * Erzeugt einen Knotenpunkt im AST
+     * @param start Beginn der Fehlermeldung, falls in einem Token-Abschnitt ein semantischer Fehler auftritt
+     * @param end Ende der Fehlermeldung
+     * @return Objekt der Klasse Node
+    */
     public Node(Token start, Token end) {
         this.end = end;
         this.start = start;
     }
+
+    /**
+     * Ausgabe zum Debuggen / Fehlersuche
+     * @param indent Einzug für die Ausgabe
+     * @return Strukturierten String mit gewünschten Inhalt
+     */
     public abstract String toString(String indent);
 
+    /**
+     * Dient zur semantischen Korrektheit (Typ-Überprüfung)
+     * @param tabelle Symbole, die sich in einem Code-Abschnitt 
+     * befinden und neue Symbolehinzugefügt werden können
+     * @param errors Falls Fehler auftreten, werden die Fehler in einer Liste abgespeichert
+     */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {}
 
+    /**
+     * Methode zur Erzeugung eines Knotens
+     */
     public void run() {}
 }
 
+
+/**
+ * Abstrakte Klasse ExprNode entspricht der Klasse Node
+ * mit einem Objekt von Typ Type als Erweiterung zur Speicherung 
+ * des Typs
+ */
 abstract class ExprNode extends Node {
     Type type;
 
@@ -29,10 +57,22 @@ abstract class ExprNode extends Node {
         super(start, end);
     }
     public abstract Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors);
+
+    /**
+     * Erzeugung eines Value-Objektes, der 
+     * alle Objekt-Typen der Skriptsprache zusammenfasst
+     * @return Neues Objekt der Skriptsprache verpackt im Value-Objekt
+     */
     public abstract Value runExpr();
+
     public void run() { runExpr(); }
 }
 
+/**
+ * NumberNode dient als Oberklasse für Integer-Deklarationen
+ * Beinhaltet einen Token mit dem Inhalt des Integers
+ * Kann auch auf Double, Float erweitert werden (nicht Teil der Skriptsprache)
+ */
 abstract class NumberNode extends ExprNode {
     Token content;
     public NumberNode(Token content) {
@@ -41,18 +81,32 @@ abstract class NumberNode extends ExprNode {
     }
 }
 
+/**
+ * Abstrakte Klasse für Statements zur besseren Struktur der Node-Hierarchie
+ * (If, While, Block, Print, Emptystatements, Expressions)
+ */
 abstract class StmntNode extends Node {
     public StmntNode(Token start, Token end) {
         super(start,end);
     }
 }
 
-//Klassen aus Abstract-Klassen erstellt
+//Folgend Node-Deklarationen, die von den abstrakten Nodes erben
+
+/**
+ * CUNode ist die Wurzel des Node-Hierarchie und beinhaltet eine Liste
+ * der Nodes, die abgearbeitet werden müssen
+ */
 class CUNode extends Node {
     List<Node> declAndStmnts =  new LinkedList<>();
     public CUNode() {
         super(null, null);
     }
+
+    /**
+     * Fügt der Liste einen Knoten (Knoten) hinzu
+     * @param node Knoten, der hinzugefügt werden soll
+     */
     public void add(Node node) {
         declAndStmnts.add(node);
         if (start==null) start = node.start;
@@ -63,21 +117,43 @@ class CUNode extends Node {
         for (Node node:declAndStmnts) res += "\n"+node.toString(indent+"\t");
         return res;
      }
+
+    /**
+     * Legt eine globale Symboltabelle an mit Aufruf der 
+     * semantischen Analyse der abzuarbeitenden Knoten
+     */
      public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         SymbolTabelle global = new SymbolTabelle(null);
         for (Node node: declAndStmnts) node.semantischeAnalyse(global, errors);
      }
+
+     /**
+      * Für jeden Knoten-Typ wird die jeweilige run-Methode aufgerufen
+      */
      public void run() {
          for (Node node: declAndStmnts) node.run();
      }
  }
 
+ /**
+  * Deklarierungen werden im DeclNode festgehalten
+  * (Beispiel: int a = 10; --> typ name = wert)
+  * Zudem können auch generische Typen aufgelistet werden
+  */
  class DeclNode extends Node {
     Token typ;
     List<Token> genericTypes;
     Token name;
     Value wert;
 
+    /**
+     * Konstruktor des DeclNoce
+     * @param typ Typ des Knoten
+     * @param genericTypes Mögliche Generics
+     * @param name Name der Deklaration
+     * @param end Ende der Deklaration
+     * Dem Typ des Value wert wird über das Token typ ermittelt
+     */
     public DeclNode(Token typ, List<Token> genericTypes, Token name, Token end) {
         super(typ, end);
         this.typ = typ;
@@ -104,15 +180,29 @@ class CUNode extends Node {
                 wert.type = Type.epsilonTransitionType;break;
             case("FA"):
                 wert.type = Type.finiteAutomataType;break;
-            case("RA"):
+            case("RE"):
                 wert.type = Type.regularExpressionType;break;
             case("Set"):
                 wert.type = Type.setType;break;
             case("Map"):
                 wert.type = Type.mapType;break;
+            case("Or"):
+                wert.type = Type.orType;break;
+            case("Concat"):
+                wert.type = Type.concatType;break;
+            case("Star"):
+                wert.type = Type.starType;break;
+            case("RangeExpr"):
+                wert.type = Type.rangeExprType;break;
+            case("EmptyWord"):
+                wert.type = Type.emptyWordType;break;
         }
 
     }
+
+    /**
+     * Ausgabe der Declaration mit eventuell vorhanden Generic-Typen
+     */
     public String toString(String indent) {
         String s = indent+"Declaration: "+typ.content;
         if(genericTypes!=null && genericTypes.size()!=0){
@@ -129,12 +219,21 @@ class CUNode extends Node {
         s+=" "+name.content;
         return s;
     }
+
+    /**
+     * Die Deklaration wird in die Symboltabelle übernommen
+     */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         tabelle.add(name.content, Type.getType(typ.content), this);
     }
 
 }
 
+
+/**
+ * PrintNode stellt die Methode System.out.prinln() dar
+ * Dazu wird ein ExprNode übergeben, der rekursiv ausgewertet wird
+ */
 class PrintNode extends StmntNode {
     ExprNode expr;
 
@@ -149,12 +248,21 @@ class PrintNode extends StmntNode {
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
         expr.semantischeAnalyseExpr(tabelle,errors);
     }
+
+    /**
+     * Auswertung des ExprNode, dessen Ergebnis (Value) ausgegeben wird
+     */
     public void run() {
         Value ausg = expr.runExpr();
         System.out.println(ausg.toString());
     }
 }
 
+
+/**
+ * Beschreibt ein leeres Statement ohne Inhalt. 
+ * Daher ist auch keine runExpr()-Methode enthalten
+ */
 class EmptyStmntNode extends StmntNode {
     public EmptyStmntNode(Token start) {
         super(start,start);
@@ -165,6 +273,8 @@ class EmptyStmntNode extends StmntNode {
 
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) { }
 }
+
+
 
 class IfNode extends StmntNode {
     ExprNode expr;
@@ -600,13 +710,12 @@ class RangeNode extends ExprNode{
     }
 }
 
-
+//Transitionnode beinhaltet zwei Konstruktoren:
+//Normaler Übergang: StartState -- [Range] --> EndState
+//Epsilon-Übergang : StartState ---> EndState
+//Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
+//und zwischen EpsilonTransition und normaler Transition unterschieden
 class TransitionNode extends ExprNode {
-    //Transitionnode beinhaltet zwei Konstruktoren:
-    //Normaler Übergang: StartState -- [Range] --> EndState
-    //Epsilon-Übergang : StartState ---> EndState
-    //Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
-    //und zwischen EpsilonTransition und normaler Transition unterschieden
     ExprNode start = null;
     ExprNode end = null;
     ExprNode r = null;
@@ -636,15 +745,6 @@ class TransitionNode extends ExprNode {
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        if(start.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
-            errors.add(new SemanticError(start.start,end.end,"transition start must be State"));
-        
-        if(end.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
-            errors.add(new SemanticError(start.start,end.end,"transition end must be State"));
-        
-        if(r.semantischeAnalyseExpr(tabelle, errors) != Type.rangeType)
-            errors.add(new SemanticError(start.start, end.end, "transition range must be Range"));
-            
         return Type.transitionType;
     }
     public Value runExpr() {
@@ -694,6 +794,7 @@ class FiniteAutomataNode extends ExprNode{
 
 class SetNode extends ExprNode {
     Token type;
+    List<Pair<ExprNode,ExprNode>> entries;
     List<ExprNode> list;
     
     
@@ -735,44 +836,52 @@ class SetNode extends ExprNode {
 }
 
 class MapNode extends ExprNode {
-    Token type;
-    List<ExprNode> keyTypes;
-    List<ExprNode> valueTypes;
+    List<Pair<ExprNode,ExprNode>> entries;
 
-    public MapNode(Token type, List<ExprNode> keyTypes, List<ExprNode> valueTypes){
-        super(type, type);
-        this.type = type;
-        this.keyTypes = keyTypes;
-        this.valueTypes = valueTypes;
+    public MapNode(List<Pair<ExprNode,ExprNode>> entries){
+        super(entries.get(0).getL().start,
+        ((entries.get(entries.size()-1).getR())!=null) ? entries.get(entries.size()-1).getR().end : entries.get(0).getL().end);
+        this.entries = entries;
     }
 
     @Override
     public String toString(String indent) {
-        return indent + "Map<" + keyTypes.get(0).type.toString() + "," + valueTypes.get(0).type.toString() + ">;" ;
+        String ret = indent+"Map: ";
+        for (Pair<ExprNode,ExprNode> pair : entries) {
+            if(pair.getR() == null)
+                ret += "'"+pair.getL()+"' ";
+            else
+                ret += "'"+pair.getL()+"'-'"+pair.getR()+"' ";
+        }
+        return  ret;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        if(keyTypes.size() != valueTypes.size())
+        ExprNode typeLeft = entries.get(0).getL();
+        ExprNode typeRight = entries.get(0).getR();
+        int sizeList = entries.size();
+        for(int i = 0; i < sizeList; i++)
         {
-            errors.add(new SemanticError(start, end, "Different Size between Map-KeyTypes and Map-ValueTypes"));
-        }
-
-        for (ExprNode i : keyTypes) {
-            if(i.type.toString() != type.content.toString())
+            if(entries.get(i).getL().type != typeLeft.type)
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Map)"));
-                return Type.errorType;
+                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes :" + entries.get(i).getL().type.toString()  + "!=" + typeLeft.type.toString()));
             }
         }
 
-        for (ExprNode i : valueTypes) {
-            if(i.type.toString() != type.content.toString())
+        for(int i = 0; i < sizeList; i++)
+        {
+            if(entries.get(i).getR().type != typeRight.type)
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Map)"));
-                return Type.errorType;
+                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes :" + entries.get(i).getR().type.toString()  + "!=" + typeRight.type.toString()));
             }
         }
+
+        Value typeleft = typeLeft.runExpr();
+        Value typeright = typeRight.runExpr();
+        //Map test = new HashMap<typeleft, typeright>();
+        //Value erg = new Value(new HashMap<typeleft, typeright>());
+        //erg.type = Type.mapType; 
         return Type.mapType;
     }
 
