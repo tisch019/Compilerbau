@@ -1106,7 +1106,7 @@ class ConcatNode extends RegularExpressionNode {
         Value erg = new Value();
         Value orLeft = left.runExpr();
         Value orRight = right.runExpr();
-        erg.re = new Concat(orLeft.rExpr, orRight.re);
+        erg.re = new Concat(orLeft.re, orRight.re);
         return erg;
     }
 
@@ -1172,9 +1172,9 @@ class RangeExprNode extends RegularExpressionNode {
         Value erg = new Value();
 
         if(right != null) {
-            erg.rExpr = new RangeExpr(new Range(left.content.charAt(0), right.content.charAt(0)));
+            erg.re = new RangeExpr(new Range(left.content.charAt(0), right.content.charAt(0)));
          } else {
-            erg.rExpr = new RangeExpr(new Range(left.content.charAt(0)));
+            erg.re = new RangeExpr(new Range(left.content.charAt(0)));
          }
         
         return erg;
@@ -1200,7 +1200,7 @@ class EmptyWordNode extends RegularExpressionNode {
     @Override
     public Value runExpr() {
         Value erg = new Value();
-        erg.rExpr = null;
+        erg.re = null;
         return erg;
     }
     
