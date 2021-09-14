@@ -927,8 +927,7 @@ class RangeExprNode extends RegularExpressionNode {
     }
     @Override
     public String toString(String indent) {
-        
-        return null;
+        return indent + "RE-RangeExpr: new Range(" + ra.toString() + ")";
     }
 
     @Override
@@ -942,4 +941,29 @@ class RangeExprNode extends RegularExpressionNode {
         erg.rExpr = new RangeExpr(ra.runExpr().r);
         return erg;
     }
+}
+
+class EmptyWordNode extends RegularExpressionNode {
+
+    public EmptyWordNode() {
+        super(null,null);
+    }
+    @Override
+    public String toString(String indent) {
+        
+        return "EmptyWord";
+    }
+
+    @Override
+    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        return Type.emptyWordType;
+    }
+
+    @Override
+    public Value runExpr() {
+        Value erg = new Value();
+        erg.rExpr = null;
+        return erg;
+    }
+    
 }
