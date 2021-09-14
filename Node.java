@@ -586,17 +586,17 @@ class RangeNode extends ExprNode{
         return type = Type.rangeType;
     }
     public Value runExpr() {
-        Value erg = new Value(new Range());
         for (Pair<ExprNode,ExprNode> pair : entries) {
             if(pair.getR() == null) 
             {
-                erg.r.add(pair.getL().runExpr().c);
+                char a = pair.getL().runExpr().c;
+                return new Value(new Range(a,a));
             } else {
-                erg.r.add(pair.getL().runExpr().c, 
-                            pair.getR().runExpr().c);
+                return new Value(new Range(pair.getL().runExpr().c,
+                    pair.getR().runExpr().c));
             }
         }
-        return erg;
+        return new Value(new Range());
     }
 }
 
@@ -922,7 +922,7 @@ class RangeExprNode extends RegularExpressionNode {
     RangeNode ra;
 
     public RangeExprNode(RangeNode ra) {
-        super(ra);
+        super(null,null);
         this.ra = ra;
     }
     @Override
