@@ -1042,11 +1042,11 @@ class ArrayNode extends ExprNode {
 }
 
 abstract class RegularExpressionNode extends ExprNode {
-    RegularExpressionNode left;
-    RegularExpressionNode right;
+    Token left;
+    Token right;
 
-    public RegularExpressionNode(RegularExpressionNode left, RegularExpressionNode right) {
-        super(left.start, right.end);
+    public RegularExpressionNode(Token left, Token right) {
+        super(left, right);
     }
     
 }
@@ -1056,7 +1056,7 @@ class OrNode extends RegularExpressionNode {
     RegularExpressionNode right;
     
     public OrNode(RegularExpressionNode left, RegularExpressionNode right) {
-        super(left, right);
+        super(left.start, right.end);
         this.left = left;
         this.right = right;
     }
@@ -1086,7 +1086,7 @@ class ConcatNode extends RegularExpressionNode {
 
 
     public ConcatNode(RegularExpressionNode left, RegularExpressionNode right) {
-        super(left, right);
+        super(left.start, right.end);
         this.left = left;
         this.right = right;
     }
@@ -1106,7 +1106,7 @@ class ConcatNode extends RegularExpressionNode {
         Value erg = new Value();
         Value orLeft = left.runExpr();
         Value orRight = right.runExpr();
-        erg.re = new Concat(orLeft.re, orRight.re);
+        erg.re = new Concat(orLeft.rExpr, orRight.re);
         return erg;
     }
 
@@ -1116,7 +1116,7 @@ class StarNode extends RegularExpressionNode {
     RegularExpressionNode regEx;
 
     public StarNode(RegularExpressionNode regEx) {
-        super(regEx, regEx);
+        super(regEx.start, regEx.end);
         this.regEx = regEx;
     }
 
@@ -1143,17 +1143,23 @@ class StarNode extends RegularExpressionNode {
 
 
 class RangeExprNode extends RegularExpressionNode {
-    List<Pair<Token,Token>> entries;
-    RegularExpressionNode regEx;
+    Token left;
+    Token right;
 
-    public RangeExprNode(List<Pair<Token,Token>> entries) {
-        super(null,null);
-        //TODO
-        this.entries = entries;
+    public RangeExprNode(Token left, Token right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
     }
     @Override
     public String toString(String indent) {
-        return indent + "RE-RangeExpr: new Range(" + ra.toString() + ")";
+
+            if(right != null) {
+               return indent + "RE-RangeExpr: new Range(" + left.content + "," + right.content +")" + "\n";
+            } else {
+               return indent + "RE-RangeExpr: new Range(" +left.content + ")" + "\n";
+            }
+    
     }
 
     @Override
@@ -1164,7 +1170,13 @@ class RangeExprNode extends RegularExpressionNode {
     @Override
     public Value runExpr() {
         Value erg = new Value();
-        erg.rExpr = new RangeExpr(ra.runExpr().r);
+
+        if(right != null) {
+            erg.rExpr = new RangeExpr(new Range(left.content.charAt(0), right.content.charAt(0)));
+         } else {
+            erg.rExpr = new RangeExpr(new Range(left.content.charAt(0)));
+         }
+        
         return erg;
     }
 }
