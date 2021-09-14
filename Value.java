@@ -22,11 +22,11 @@ public class Value {
     
 
     //RE-Types aus der Klasse RegularExpression.java
-    Or or;
-    Concat con;
-    Star star;
-    RangeExpr rExpr;
-    EmptyWord eWord;
+    //Or or;
+    //Concat con;
+    //Star star;
+    //RangeExpr rExpr;
+    //EmptyWord eWord;
 
     public Value() {};
 
@@ -59,16 +59,6 @@ public class Value {
             return mp.toString();
         }else if(type == Type.arrayType){
             return ar.toString();
-        }else if(type == Type.orType){
-            return or.toString();
-        }else if(type == Type.concatType){
-            return con.toString();
-        }else if(type == Type.starType){
-            return star.toString();
-        }else if(type == Type.rangeExprType){
-            return rExpr.toString();
-        }else if(type == Type.emptyWordType){
-            return eWord.toString();
         }else return "Error Converting Value to String with Type "+type.toString();
     }
 
@@ -85,14 +75,14 @@ public class Value {
     public Value(Set<Value> st) { type = Type.setType; this.st = st;}
     public Value(Map<Value,Value> mp) { type = Type.setType; this.mp = mp;}
     public Value(List<Value> ar) { type = Type.arrayType; this.ar = ar;}
-    public Value(Value c) { type = c.type; this.c =c.c; stg=c.stg; b=c.b; i=c.i; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp; ar=c.ar; va=c.va; or = c.or; con = c.con; star = c.star; rExpr=c.rExpr; eWord=c.eWord;}
+    public Value(Value c) { type = c.type; this.c =c.c; stg=c.stg; b=c.b; i=c.i; s=c.s; r=c.r; t=c.t; et=c.et; fa=c.fa; re=c.re;st=c.st; mp=c.mp; ar=c.ar; va=c.va;}
 
     //RE-Values
-    public Value(Or or) {type = Type.orType; this.or = or;}
-    public Value(Concat con) {type = Type.concatType; this.con = con;}
-    public Value(Star star) {type = Type.starType; this.star = star;}
-    public Value(RangeExpr rExpr) {type = Type.rangeExprType; this.rExpr = rExpr;}
-    public Value(EmptyWord eWord) {type = Type.emptyWordType; this.eWord = eWord;}
+    //public Value(Or or) {type = Type.orType; this.or = or;}
+    //public Value(Concat con) {type = Type.concatType; this.con = con;}
+    //public Value(Star star) {type = Type.starType; this.star = star;}
+    //public Value(RangeExpr rExpr) {type = Type.rangeExprType; this.rExpr = rExpr;}
+    //public Value(EmptyWord eWord) {type = Type.emptyWordType; this.eWord = eWord;}
 
     //public Value(Set<Node> st) { type = Type.setType; this.st = st;}
     //public Value(Map<Node,Node> mp) { type = Type.setType; this.mp = mp;}
