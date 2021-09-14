@@ -365,7 +365,7 @@ public class Lexer {
                         mark();
                     }
                     break;
-                // Case 22 CHAR
+                // Case 22 - 23 CHAR
                 case 22:
                     if (isIdentChar(nextChar)) {
                         mark();
@@ -395,7 +395,7 @@ public class Lexer {
                         state = 100;
                     }
                     break;
-                // Case 25 - 26 row comment
+                // Case 25 - 28 comments
                 case 25:
                     if (nextChar == '/') {
                         mark();
