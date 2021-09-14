@@ -648,7 +648,7 @@ public class Parser {
         }else if(filter.getToken().kind == Token.Type.RE_OPT){ // ?
             //Kleen: e | empty
             RegularExpressionNode e = res;
-            res = new OrNode(e, new EmptyWordNode()); 
+            res = new OrNode(e, new EmptyWordNode(e)); 
         }else if(filter.getToken().kind == Token.Type.RE_PLUS){ // +
             //PosKleen: e concat e*
             RegularExpressionNode e = res;
