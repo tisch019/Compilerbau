@@ -752,11 +752,16 @@ class StateNode extends ExprNode{
 }
 
 /**
- * 
+ * RangeNode enthält eine Liste aus Paaren (Pairs), die vom Typ ExprNode sind.
  */
 class RangeNode extends ExprNode{
     List<Pair<ExprNode,ExprNode>> entries;
 
+    /**
+     * Konstruktor des RangeNodes
+     * @param entries Liste der Pairs
+     * Prüfung, ob zweites Teil-Paar leer ist
+     */
     public RangeNode(List<Pair<ExprNode,ExprNode>> entries) {
         super(entries.get(0).getL().start,
             ((entries.get(entries.size()-1).getR())!=null) ? entries.get(entries.size()-1).getR().end : entries.get(0).getL().end);
@@ -775,6 +780,10 @@ class RangeNode extends ExprNode{
         return  ret;
     }
 
+    /**
+     * Prüfung, ob alle Pairs der Liste vom Typ charType,
+     * sonst Error-Meldung
+     */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         //Alle Pairs müssen Char sein
@@ -787,13 +796,20 @@ class RangeNode extends ExprNode{
         }
         return type = Type.rangeType;
     }
+
+    /**
+     * Erzeugung eines Range für jedes Pair
+     */
     public Value runExpr() {
         for (Pair<ExprNode,ExprNode> pair : entries) {
+            
             if(pair.getR() == null) 
             {
+                //rechter Teil des Pair ist leer
                 char a = pair.getL().runExpr().c;
                 return new Value(new Range(a,a));
             } else {
+                //rechter Teil enthält einen Char
                 return new Value(new Range(pair.getL().runExpr().c,
                     pair.getR().runExpr().c));
             }
