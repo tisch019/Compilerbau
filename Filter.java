@@ -39,13 +39,15 @@ class Filter{
 
     Token getNextFilteredToken() throws IOException {
         Token currentToken;
+        int help = 1;
         do {
             currentToken = lexer.getNextToken();
             currentToken.line = line;
             currentToken.column = column;
             if (currentToken.content.equals("\n") || currentToken.content.equals("\r")) {
-                line++;
+                line = line + (help%2);
                 column = 1;
+                help++;
             }
             else column += currentToken.content.length();
             if (currentToken.kind == Token.Type.ERROR) errors.add(new LexerError(currentToken, "Unknown token " + currentToken.content));
