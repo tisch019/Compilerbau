@@ -793,28 +793,28 @@ class FiniteAutomataNode extends ExprNode{
 
 
 class SetNode extends ExprNode {
-    Token type;
-    List<Pair<ExprNode,ExprNode>> entries;
     List<ExprNode> list;
     
     
-    public SetNode(Token type, List<ExprNode> list){
-        super(type, type);
-        this.type = type;
+    public SetNode(List<ExprNode> list){
+        super(list.get(0).start, list.get(list.size()-1).end);
         this.list = list;
     }
 
     @Override
     public String toString(String indent) {
-        return indent + "Set<" + type.content + "> = new HashSet<" + type.content + ">;" ;
+        return indent + "Set<" + list.get(0).type + "> = new HashSet<" + list.get(0).type + ">;" ;
     }
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        for (ExprNode i : list) {
-            if(i.type.toString() != type.content.toString())
+        ExprNode typeValue = list.get(0);
+        int sizeList = list.size();
+        for(int i = 0; i < sizeList; i++)
+        {
+            if(list.get(i).type.toString() != typeValue.type.toString())
             {
-                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ i.type.toString() + " vs " + type.content.toString() + " Type of Set)"));
+                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ list.get(i).type.toString() + " vs " + typeValue.type.toString() + " Type of Set)"));
                 return Type.errorType;
             }
         }
@@ -877,21 +877,20 @@ class MapNode extends ExprNode {
             }
         }
 
-        Value typeleft = typeLeft.runExpr();
-        Value typeright = typeRight.runExpr();
-        //Map test = new HashMap<typeleft, typeright>();
-        //Value erg = new Value(new HashMap<typeleft, typeright>());
-        //erg.type = Type.mapType; 
-        return Type.mapType;
+        Type erg = Type.mapType.copy();
+        erg.addGenTyp(typeLeft.type);
+        erg.addGenTyp(typeRight.type); 
+        return erg;
     }
 
     @Override
     public Value runExpr() {
         Map<Value, Value> verified = new HashMap<Value, Value>();
-        for(int i = 0; i < keyTypes.size(); i++)
+        int sizeList = entries.size();
+        for(int i = 0; i < sizeList; i++)
         {
-            Value key = keyTypes.get(i).runExpr();
-            Value valuetype = valueTypes.get(i).runExpr();
+            Value key = entries.get(i).getL().runExpr();
+            Value valuetype = entries.get(i).getR().runExpr();
             verified.put(key, valuetype);
         }
         Value erg = new Value(verified);    
@@ -901,13 +900,11 @@ class MapNode extends ExprNode {
 }
 
 class ArrayNode extends ExprNode {
-    Token type;
     List<ExprNode> list;
     
     
-    public ArrayNode(Token type, List<ExprNode> list){
-        super(type, type);
-        this.type = type;
+    public ArrayNode(List<ExprNode> list){
+        super(list.get(0).start, list.get(list.size()-1).end);
         this.list = list;
     }
 
