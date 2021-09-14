@@ -600,12 +600,13 @@ class RangeNode extends ExprNode{
     }
 }
 
-//Transitionnode beinhaltet zwei Konstruktoren:
-//Normaler Übergang: StartState -- [Range] --> EndState
-//Epsilon-Übergang : StartState ---> EndState
-//Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
-//und zwischen EpsilonTransition und normaler Transition unterschieden
+
 class TransitionNode extends ExprNode {
+    //Transitionnode beinhaltet zwei Konstruktoren:
+    //Normaler Übergang: StartState -- [Range] --> EndState
+    //Epsilon-Übergang : StartState ---> EndState
+    //Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
+    //und zwischen EpsilonTransition und normaler Transition unterschieden
     ExprNode start = null;
     ExprNode end = null;
     ExprNode r = null;
@@ -635,6 +636,15 @@ class TransitionNode extends ExprNode {
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        if(start.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
+            errors.add(new SemanticError(start.start,end.end,"transition start must be State"));
+        
+        if(end.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
+            errors.add(new SemanticError(start.start,end.end,"transition end must be State"));
+        
+        if(r.semantischeAnalyseExpr(tabelle, errors) != Type.rangeType)
+            errors.add(new SemanticError(start.start, end.end, "transition range must be Range"));
+            
         return Type.transitionType;
     }
     public Value runExpr() {
