@@ -57,8 +57,7 @@ public class Token
         EOF,            // End des Streams / Quelldatei
 
         //Token für Reguläre Ausdrücke
-        FAREGEXSTART,   // </
-        FAREGEXEND,     // />
+        RE_SLASH,       // /
         RE_BRACKETOPEN, // (
         RE_BRACKETCLOSE,// )
         RE_MARK,        // "

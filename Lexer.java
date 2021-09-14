@@ -12,6 +12,8 @@ public class Lexer {
     int current;
     int start;
     int startOffset;
+    boolean firstInRegex;
+    boolean lastInRegex;
     boolean inRegex;
     boolean ended = false;
     InputStream input = null;
@@ -21,6 +23,8 @@ public class Lexer {
         input = new FileInputStream(name);
         logger.info("Lexer created");
         inRegex = false;
+        firstInRegex = false;
+        lastInRegex = false;
     }
 
     public void close() throws IOException {
@@ -207,9 +211,9 @@ public class Lexer {
                     } else if (nextChar == '$') {
                         t.kind = Token.Type.FASTART;
                     } else if (nextChar == '/') {
-                        mark();
-                        t.kind = Token.Type.FAREGEXSTART;
-                        inRegex = true; // Regex in state 50 mit persitant State bauen und Ende erkennen
+                        t.kind = Token.Type.FASTART;
+                        inRegex = true;
+                        firstInRegex = true;
                     }
                     state = 100;
                     break;
@@ -496,14 +500,26 @@ public class Lexer {
                             break;
                         case '/':
                             mark();
-                            if(getNextChar()=='>') {
-                                mark();
-                                t.kind = Token.Type.RE_SBCLOSE;
+                            if(firstInRegex) {
+                                t.kind = Token.Type.RE_SLASH;
+                                firstInRegex = false;
+                            }
+                            else {
+                                t.kind = Token.Type.RE_SLASH;
+                                lastInRegex = true;
+                            }
+                            state = 100;
+                            break;
+                        case '>':
+                            mark();
+                            if(lastInRegex) {
+                                t.kind = Token.Type.FAEND;
                                 inRegex = false;
+                                lastInRegex = false;
                             } else {
-                                mark();
                                 t.kind = Token.Type.ERROR;
-                                logger.info("Error in Lexer at case 50 in Regex / case. Wrong char after /");
+                                lastInRegex = false;
+                                logger.info("Error in Lexer at case 50 in Regex / case. / in wrong place.");
                             }
                             state = 100;
                             break;
@@ -524,6 +540,7 @@ public class Lexer {
                             mark();
                             state = 100;
                     }
+                    firstInRegex = false;
             }
         } while (state != 100);
         if (marked == -1) {
