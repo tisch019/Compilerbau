@@ -1,5 +1,25 @@
+State a;
+a = $"A";
+print a;
+
+State b;
+b = $"B";
+print b;
 
 Range c;
 c = ['g'-'x'];
 print c;
 
+Range d;
+d = ['a'-'c'];
+print d;
+
+//Addiere Ranges
+print c+d;
+
+Transition t;
+t = $"G"--['j']-->$"P";
+print t;
+
+t = a--c-->b;
+print t; 
