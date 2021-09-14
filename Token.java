@@ -71,7 +71,9 @@ public class Token
         RE_RANGE,       // -
         RE_COVER,       // *
         RE_OPT,         // ?
-        RE_PLUS         // +
+        RE_PLUS,        // +
+        RE_COMMA,       // ,
+        RE_NOT          // !
     };
     
     public Type kind;

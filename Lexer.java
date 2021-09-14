@@ -12,6 +12,7 @@ public class Lexer {
     int current;
     int start;
     int startOffset;
+    boolean inRegex;
     boolean ended = false;
     InputStream input = null;
 
@@ -19,6 +20,7 @@ public class Lexer {
         logger.setLevel(Level.INFO);
         input = new FileInputStream(name);
         logger.info("Lexer created");
+        inRegex = false;
     }
 
     public void close() throws IOException {
@@ -29,6 +31,14 @@ public class Lexer {
 
     boolean isDigit(int c) {
         return c >= '0' && c <= '9';
+    }
+
+    boolean isChar(int c) {
+        if (c >= 'a' && c <= 'z')
+            return true;
+        if (c >= 'A' && c <= 'Z')
+            return true;
+        return false;
     }
 
     boolean isIdentChar(int c) {
@@ -46,6 +56,9 @@ public class Lexer {
         int state = 0;
         startOffset = 0;
         Token t = new Token();
+        if (inRegex) {
+            state = 50;
+        }
         do {
             int nextChar = getNextChar();
             switch (state) {
@@ -194,8 +207,9 @@ public class Lexer {
                     } else if (nextChar == '$') {
                         t.kind = Token.Type.FASTART;
                     } else if (nextChar == '/') {
+                        mark();
                         t.kind = Token.Type.FAREGEXSTART;
-                        state = 50; // Regex in state 50 mit persitant State bauen und Ende erkennen
+                        inRegex = true; // Regex in state 50 mit persitant State bauen und Ende erkennen
                     }
                     state = 100;
                     break;
@@ -412,6 +426,104 @@ public class Lexer {
                         state = 27;
                     }
                     break;
+                //REGEX
+                case 50:
+                    switch (nextChar) {
+                        case '(':
+                            mark();
+                            t.kind = Token.Type.RE_BRACKETOPEN;
+                            state = 100;
+                            break;
+                        case ')':
+                            mark();
+                            t.kind = Token.Type.RE_BRACKETCLOSE;
+                            state = 100;
+                            break;
+                        case '|':
+                            mark();
+                            t.kind = Token.Type.RE_OR;
+                            state = 100;
+                            break;
+                        case '[':
+                            mark();
+                            t.kind = Token.Type.RE_SBOPEN;
+                            state = 100;
+                            break;
+                        case ']':
+                            mark();
+                            t.kind = Token.Type.RE_SBCLOSE;
+                            state = 100;
+                            break;
+                        case '\'':
+                            mark();
+                            t.kind = Token.Type.RE_SINGLEMARK;
+                            state = 100;
+                            break;
+                        case '-':
+                            mark();
+                            t.kind = Token.Type.RE_RANGE;
+                            state = 100;
+                            break;
+                        case '*':
+                            mark();
+                            t.kind = Token.Type.RE_COVER;
+                            state = 100;
+                            break;
+                        case '?':
+                            mark();
+                            t.kind = Token.Type.RE_OPT;
+                            state = 100;
+                            break;
+                        case '+':
+                            mark();
+                            t.kind = Token.Type.RE_PLUS;
+                            state = 100;
+                            break;
+                        case '"':
+                            mark();
+                            t.kind = Token.Type.RE_MARK;
+                            state = 100;
+                            break;
+                        case ',':
+                            mark();
+                            t.kind = Token.Type.RE_COMMA;
+                            state = 100;
+                            break;
+                        case '!':
+                            mark();
+                            t.kind = Token.Type.RE_NOT;
+                            state = 100;
+                            break;
+                        case '/':
+                            mark();
+                            if(getNextChar()=='>') {
+                                mark();
+                                t.kind = Token.Type.RE_SBCLOSE;
+                                inRegex = false;
+                            } else {
+                                mark();
+                                t.kind = Token.Type.ERROR;
+                                logger.info("Error in Lexer at case 50 in Regex / case. Wrong char after /");
+                            }
+                            state = 100;
+                            break;
+                        case ' ':
+                        case '\t':
+                        case '\n':
+                        case '\r':
+                            mark();
+                            start = current;
+                            break;
+                        default:
+                            if (isChar(nextChar)) {
+                                t.kind = Token.Type.RE_CHAR;
+                            } else {
+                                t.kind = Token.Type.ERROR;
+                                logger.info("Error in Lexer at case 50 in Regex default case. Unknow Token.");
+                            }
+                            mark();
+                            state = 100;
+                    }
             }
         } while (state != 100);
         if (marked == -1) {
