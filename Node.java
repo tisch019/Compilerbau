@@ -1143,11 +1143,13 @@ class StarNode extends RegularExpressionNode {
 
 
 class RangeExprNode extends RegularExpressionNode {
-    RangeNode ra;
+    List<Pair<Token,Token>> entries;
+    RegularExpressionNode regEx;
 
-    public RangeExprNode(RangeNode ra) {
+    public RangeExprNode(List<Pair<Token,Token>> entries) {
         super(null,null);
-        this.ra = ra;
+        //TODO
+        this.entries = entries;
     }
     @Override
     public String toString(String indent) {
