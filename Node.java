@@ -1147,7 +1147,7 @@ class RangeExprNode extends RegularExpressionNode {
     Token right;
 
     public RangeExprNode(Token left, Token right) {
-        super(left, right);
+        super(left, left);
         this.left = left;
         this.right = right;
     }
@@ -1183,8 +1183,8 @@ class RangeExprNode extends RegularExpressionNode {
 
 class EmptyWordNode extends RegularExpressionNode {
 
-    public EmptyWordNode() {
-        super(null,null);
+    public EmptyWordNode(RegularExpressionNode r) {
+        super(r.start,r.start);
     }
     @Override
     public String toString(String indent) {
