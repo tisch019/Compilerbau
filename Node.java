@@ -610,7 +610,7 @@ class TransitionNode extends ExprNode {
     ExprNode end = null;
     ExprNode r = null;
 
-    public TransitionNode(ExprNode start, ExprNode end, ExprNode r) {
+    public TransitionNode(ExprNode start, ExprNode r, ExprNode end) {
         super(start.start, end.end);
         this.start = start;
         this.end = end;

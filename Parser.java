@@ -516,9 +516,6 @@ public class Parser {
             else
                 stateA = new StateNode(content,false);
 
-            if(filter.getToken().kind == Token.Type.TRANSSTART
-                || filter.getToken().kind == Token.Type.TRANSEPSI){
-                //Transition
                 if(filter.getToken().kind == Token.Type.TRANSSTART){
                     //Trans = STATE TRANSSTART RANGE TRANSEND STATE
                     filter.matchToken(); // --
@@ -526,14 +523,15 @@ public class Parser {
                     filter.matchToken(Token.Type.TRANSEND,synco); // -->
                     ExprNode stateB = expr(synco);
                     res = new TransitionNode(stateA,r,stateB);
-                }else if(filter.getToken().kind == Token.Type.TRANSEPSI){
+                }
+                else if(filter.getToken().kind == Token.Type.TRANSEPSI){
                     //TransEpsi = STATE TRANSEPSI STATE
                     filter.matchToken(); // --->
                     ExprNode stateB = expr(synco);
                     res = new TransitionNode(stateA,stateB);
                 }
-            }else{ //No Transition but State
-                res = stateA;
+                else{ //No Transition but State
+                    res = stateA;
             }
         }
         //TODO RA
