@@ -1,3 +1,41 @@
+State a;
+a = $"A";
+print a;
+
+State b;
+b = $"B";
+print b;
+
+Range c;
+c = ['g'-'x'];
+print c;
+
+Transition t;
+t = $"G"--['j']-->$"P";
+print t;
+
+t = a--c-->b;
+print t;
+
 Map<char,char> m;
 m = [['A':'a','B':'b']];
 print m;
+
+FA fa;
+fa = </("abc"|['A'-'Z'])*/>;
+print fa;
+
+fa = </"hello" ("world")? ['?'-'!']/>;
+print fa;
+
+Set<Transition> set;
+set = {t};
+
+State start;
+start = $"A";
+
+fa = <$"A",{}>;
+
+fa = <$"A",set>;
+
+print fa;

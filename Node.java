@@ -993,9 +993,14 @@ class FiniteAutomataNode extends ExprNode{
             erg = new Value(ra.re.berrySethi(1));
         }else{
             //vordefinierter Automat
-            erg = null;
-            // TODO
-            // States und Transitions
+            FiniteAutomata fa = new FiniteAutomata(start.runExpr().s);
+            Set<Value> transitions = transitionSet.runExpr().st;
+            if(transitions.size() != 0){
+                for(Value trans : transitions){
+                    fa.addTransitions(trans.t);
+                }
+            }
+            erg = new Value(fa);
         }
         return erg;
     }
