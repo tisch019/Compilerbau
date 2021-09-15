@@ -406,8 +406,8 @@ public class Parser {
         return res;
     }
 
-    // prod = { atom { ("*"|"/"|"%") atom } }
-    // sync:         ^ "*" ...
+    // prod = { transition { ("*"|"/"|"%") atom } }
+    // sync:                   ^ "*" ...
     ExprNode prod(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync =  new HashSet<>(synco);
         sync.add(Token.Type.LOP);
@@ -429,14 +429,14 @@ public class Parser {
         return res;
     }
 
-    // transition = { sum { -- sum --> atom }}
+    // transition = { postfix { -- sum --> atom }}
     ExprNode transition(Set<Token.Type> synco) throws IOException, ParserError{
         Set<Token.Type> sync =  new HashSet<>(synco);
 
         ExprNode res = null;
 
         try{
-            res = atom(sync);
+            res = postfix(sync);
         }catch(ParserError error){
             throw error;
         }
@@ -451,6 +451,27 @@ public class Parser {
             filter.matchToken(); // --->
             ExprNode stateB = atom(synco); //State
             res = new TransitionNode(res,stateB);
+        }
+        return res;
+    }
+
+    // postfix = atom {++|--}
+    ExprNode postfix(Set<Token.Type> synco) throws IOException, ParserError{
+        Set<Token.Type> sync =  new HashSet<>(synco);
+
+        ExprNode res = null;
+        try{
+            res = atom(sync);
+        }catch(ParserError error){
+            throw error;
+        }
+        if(filter.getToken().kind == Token.Type.INC
+            || filter.getToken().kind == Token.Type.DEC){
+            Token op = filter.getToken();
+            filter.matchToken();
+            ExprNode a = res;
+            res = new UnOpNode(op, a);
+            
         }
         return res;
     }

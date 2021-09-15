@@ -618,6 +618,16 @@ class UnOpNode extends ExprNode {
                 if (erg.type == Type.intType)
                     erg.i = -leftV.i;
                 break;
+            case "++":
+                if (erg.type == Type.intType)
+                    erg.i = ++leftV.i;
+                    ((IdentifierNode)kid).runSetExpr(erg).copy();
+                    break;
+            case "--":
+                if (erg.type == Type.intType)
+                    erg.i = --leftV.i;
+                    ((IdentifierNode)kid).runSetExpr(erg).copy();
+                    break;
             case "!": if (erg.type == Type.booleanType)
                 erg.b = !leftV.b;
                 break;
