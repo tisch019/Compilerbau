@@ -956,6 +956,7 @@ class FiniteAutomataNode extends ExprNode{
             Value ra = new Value(regex.runExpr());
             erg = new Value(ra.re.berrySethi(1));
         }else{
+            //vordefinierter Automat
             erg = null;
             // TODO
             // States und Transitions
@@ -965,6 +966,10 @@ class FiniteAutomataNode extends ExprNode{
 
 }
 
+/**
+ * SetNode entspricht Set aus der Java-Bibliothek
+ * Inhalt des Sets ist die Liste von ExprNodes
+ */
 class SetNode extends ExprNode {
     List<ExprNode> list;
     
@@ -979,12 +984,19 @@ class SetNode extends ExprNode {
         return indent + "Set<" + list.get(0).type + "> = new HashSet<" + list.get(0).type + ">;" ;
     }
 
+    /**
+     * Typüberprüfung, ob alle ExprNodes in der Liste
+     * den gleichen Typ besitzten
+     */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        //Typ des ersten Elements
         ExprNode typeValue = list.get(0);
+        //Größe der Liste
         int sizeList = list.size();
         for(int i = 0; i < sizeList; i++)
         {
+            //Prüfung der Typen in der Liste
             if(list.get(i).type.toString() != typeValue.type.toString())
             {
                 errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ list.get(i).type.toString() + " vs " + typeValue.type.toString() + " Type of Set)"));
@@ -994,6 +1006,11 @@ class SetNode extends ExprNode {
         return Type.setType;
     }
 
+    /**
+     * Anlegen einer HashSet mit Aufruf der runExpr() 
+     * der einzelnen ExprNodes in der Liste und Aufnahme dessen Ergebnis
+     * in das HashSet
+     */
     @Override
     public Value runExpr() {
         Set<Value> verified = new HashSet<Value>();
@@ -1008,12 +1025,16 @@ class SetNode extends ExprNode {
 
 }
 
+/**
+ * MapNode entspricht Map aus der Java-Bibliothek
+ * Enthält eine Liste an Paaren vom Typ ExprNodes
+ */
 class MapNode extends ExprNode {
+    //Stets gleiche Anzahl an Keys und Values in der Map
     List<Pair<ExprNode,ExprNode>> entries;
 
     public MapNode(List<Pair<ExprNode,ExprNode>> entries){
-        super(entries.get(0).getL().start,
-        ((entries.get(entries.size()-1).getR())!=null) ? entries.get(entries.size()-1).getR().end : entries.get(0).getL().end);
+        super(entries.get(0).getL().start, entries.get(entries.size()-1).getR().end);
         this.entries = entries;
     }
 
@@ -1021,19 +1042,25 @@ class MapNode extends ExprNode {
     public String toString(String indent) {
         String ret = indent+"Map: ";
         for (Pair<ExprNode,ExprNode> pair : entries) {
-            if(pair.getR() == null)
-                ret += "'"+pair.getL()+"' ";
-            else
-                ret += "'"+pair.getL()+"'-'"+pair.getR()+"' ";
+            
+            ret += "'"+pair.getL()+"'-'"+pair.getR()+"' ";
         }
         return  ret;
     }
 
+    /**
+     * Prüfung auf Typ-Gleichheit der Keys und Values 
+     * aus der Liste mit Paaren
+     */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        //Key-Typ der Map
         Type typeLeft = entries.get(0).getL().semantischeAnalyseExpr(tabelle, errors);
+        //Value-Typ der Map
         Type typeRight = entries.get(0).getR().semantischeAnalyseExpr(tabelle, errors);
+        //Anzahl Paare in der Liste
         int sizeList = entries.size();
+
         for(int i = 0; i < sizeList; i++)
         {
             if(entries.get(i).getL().semantischeAnalyseExpr(tabelle, errors) != typeLeft)
@@ -1050,12 +1077,17 @@ class MapNode extends ExprNode {
             }
         }
 
+        //Kopieren des Typs als Name (siehe Klasse Type)
         Type erg = Type.mapType.copy();
+        //Hinzufügen des Key- und Value-Typs als Generics (siehe Klasse Type)
         erg.addGenTyp(typeLeft);
         erg.addGenTyp(typeRight); 
         return erg;
     }
 
+    /**
+     * Erzeugen der HashMap
+     */
     @Override
     public Value runExpr() {
         Map<Value, Value> verified = new HashMap<Value, Value>();
@@ -1072,6 +1104,10 @@ class MapNode extends ExprNode {
 
 }
 
+/**
+ * Identisch zu SetNode, wobei keine Typüberprüfung
+ * im ArrayNode erfolgt
+ */
 class ArrayNode extends ExprNode {
     List<ExprNode> list;
     
@@ -1106,6 +1142,10 @@ class ArrayNode extends ExprNode {
 
 }
 
+/**
+ * Abstrakter Node für einen regulären Ausdruck
+ * bestehend aus zwei Token
+ */
 abstract class RegularExpressionNode extends ExprNode {
     Token left;
     Token right;
@@ -1115,6 +1155,9 @@ abstract class RegularExpressionNode extends ExprNode {
     }
 }
 
+/**
+ * OrNode: left | right
+ */
 class OrNode extends RegularExpressionNode {
     RegularExpressionNode left;
     RegularExpressionNode right;
@@ -1134,6 +1177,10 @@ class OrNode extends RegularExpressionNode {
         return Type.orType;
     }
 
+    /**
+     * Erzeugen eines Or-Objekts
+     * Rekursive Auswertung der regular Expressions (left, right)
+     */
     @Override
     public Value runExpr() {
         Value erg = new Value();
@@ -1144,6 +1191,10 @@ class OrNode extends RegularExpressionNode {
     }
 }
 
+
+/**
+ * Concat-Node: left ○ right
+ */
 class ConcatNode extends RegularExpressionNode {
     RegularExpressionNode left;
     RegularExpressionNode right;
@@ -1165,6 +1216,10 @@ class ConcatNode extends RegularExpressionNode {
         return Type.concatType;
     }
 
+    /**
+     * Erzeugen eines Concat-Objekts im Value-Objekt
+     * Rekursive Auswertung der regulären Ausdrücke (left, right)
+     */
     @Override
     public Value runExpr() {
         Value erg = new Value();
@@ -1176,6 +1231,9 @@ class ConcatNode extends RegularExpressionNode {
 
 }
 
+/**
+ * StarNode: (regEx)*
+ */
 class StarNode extends RegularExpressionNode {
     RegularExpressionNode regEx;
 
@@ -1194,6 +1252,10 @@ class StarNode extends RegularExpressionNode {
         return Type.starType;
     }
 
+    /**
+     * Erzeugen eines Star-Objekts im Value-Objekt
+     * Rekursive Auswertung des regulären Ausdrucks (regEx)
+     */
     @Override
     public Value runExpr() {
         Value erg = new Value();
@@ -1204,6 +1266,9 @@ class StarNode extends RegularExpressionNode {
 
 }
 
+/**
+ * RangeExprNode: new Range(left, right)
+ */
 class RangeExprNode extends RegularExpressionNode {
     Token left;
     Token right;
@@ -1229,10 +1294,12 @@ class RangeExprNode extends RegularExpressionNode {
         return Type.rangeExprType;
     }
 
+
     @Override
     public Value runExpr() {
         Value erg = new Value();
 
+        //Unterscheidung der Ranges [left] oder [left - right]
         if(left != right) {
             erg.re = new RangeExpr(new Range(left.content.charAt(0), right.content.charAt(0)));
          } else {
@@ -1243,6 +1310,10 @@ class RangeExprNode extends RegularExpressionNode {
     }
 }
 
+/**
+ * Darstellung des leeren Worte
+ * ohne Inhalt im Value-Objekt
+ */
 class EmptyWordNode extends RegularExpressionNode {
 
     public EmptyWordNode(RegularExpressionNode e) {
