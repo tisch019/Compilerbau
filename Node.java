@@ -224,7 +224,14 @@ class CUNode extends Node {
      * Die Deklaration wird in die Symboltabelle übernommen
      */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        tabelle.add(name.content, Type.getType(typ.content), this);
+        if(genericTypes.size() > 0){
+            Type newT = Type.getType(typ.content).copy();
+            for(int i = 0; i < genericTypes.size() ;i++){
+                newT.addGenTyp(Type.getType(genericTypes.get(i).content));
+            }
+            tabelle.add(name.content, newT, this);
+        }else
+            tabelle.add(name.content, Type.getType(typ.content), this);
     }
 
 }
@@ -966,28 +973,28 @@ class MapNode extends ExprNode {
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        ExprNode typeLeft = entries.get(0).getL();
-        ExprNode typeRight = entries.get(0).getR();
+        Type typeLeft = entries.get(0).getL().semantischeAnalyseExpr(tabelle, errors);
+        Type typeRight = entries.get(0).getR().semantischeAnalyseExpr(tabelle, errors);
         int sizeList = entries.size();
         for(int i = 0; i < sizeList; i++)
         {
-            if(entries.get(i).getL().type != typeLeft.type)
+            if(entries.get(i).getL().semantischeAnalyseExpr(tabelle, errors) != typeLeft)
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes :" + entries.get(i).getL().type.toString()  + "!=" + typeLeft.type.toString()));
+                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes :" + entries.get(i).getL().type.toString()  + "!=" + typeLeft.toString()));
             }
         }
 
         for(int i = 0; i < sizeList; i++)
         {
-            if(entries.get(i).getR().type != typeRight.type)
+            if(entries.get(i).getR().semantischeAnalyseExpr(tabelle, errors) != typeRight)
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes :" + entries.get(i).getR().type.toString()  + "!=" + typeRight.type.toString()));
+                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes :" + entries.get(i).getR().type.toString()  + "!=" + typeRight.toString()));
             }
         }
 
         Type erg = Type.mapType.copy();
-        erg.addGenTyp(typeLeft.type);
-        erg.addGenTyp(typeRight.type); 
+        erg.addGenTyp(typeLeft);
+        erg.addGenTyp(typeRight); 
         return erg;
     }
 
@@ -1188,8 +1195,8 @@ class RangeExprNode extends RegularExpressionNode {
 
 class EmptyWordNode extends RegularExpressionNode {
 
-    public EmptyWordNode() {
-        super(null, null);
+    public EmptyWordNode(RegularExpressionNode e) {
+        super(e.start, e.start);
     }
     @Override
     public String toString(String indent) {
