@@ -826,17 +826,20 @@ class RangeNode extends ExprNode{
     }
 }
 
-/*Transitionnode beinhaltet zwei Konstruktoren:
-//Normaler Übergang: StartState -- [Range] --> EndState
-//Epsilon-Übergang : StartState ---> EndState
-//Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
-//und zwischen EpsilonTransition und normaler Transition unterschieden
+/**Transitionnode beinhaltet zwei Konstruktoren:
+ * Normaler Übergang: StartState -- [Range] --> EndState
+ * Epsilon-Übergang : StartState ---> EndState
+ * Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
+ * und zwischen EpsilonTransition und normaler Transition unterschieden
 */
 class TransitionNode extends ExprNode {
     ExprNode start = null;
     ExprNode end = null;
     ExprNode r = null;
 
+     /**
+     * Normaler Übergang
+     */
     public TransitionNode(ExprNode start, ExprNode r, ExprNode end) {
         super(start.start, end.end);
         this.start = start;
@@ -844,12 +847,18 @@ class TransitionNode extends ExprNode {
         this.r = r;
     }
 
+     /**
+     * Epsilon-Übergang
+     */
     public TransitionNode(ExprNode start, ExprNode end) {
         super(start.start, end.end);
         this.start = start;
         this.end = end;
     }
 
+    /**
+     * Ausgabe des jeweiligen Inhalts
+     */
     @Override
     public String toString(String indent) {
         if(r == null){
@@ -860,11 +869,19 @@ class TransitionNode extends ExprNode {
         }
     }
 
+     /**
+     * Rückgabe des Typs transitionType, da Reihenfolge und Typen der Token an dieser Stelle bereits korrekt
+     */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         //TODO
         return Type.transitionType;
     }
+
+    /**
+     * Erzeugung des (Epsilon) Transitionsobjekts
+     * @return Value-Objekt mit Transition als Inhalt
+     */
     public Value runExpr() {
         Value erg;
 
@@ -878,8 +895,9 @@ class TransitionNode extends ExprNode {
     }
 }
 
-/*FiniteAutomataNode gibt einen FiniteAutomata mit einem StartState wieder.
-//Transitionen werden über den Parser an den FiniteAutomata gebunden
+/**
+ * FiniteAutomataNode gibt einen FiniteAutomata mit einem StartState wieder.
+ * Transitionen werden über den Parser an den FiniteAutomata gebunden
 */
 class FiniteAutomataNode extends ExprNode{
     ExprNode start;
@@ -887,6 +905,10 @@ class FiniteAutomataNode extends ExprNode{
     RegularExpressionNode regex;
     boolean regexFA;
 
+    /**
+     * Konstruktor endlicher Automat
+     * @param start StateNode als Start erforderlich
+     */
     public FiniteAutomataNode(StateNode start, SetNode transitionSet) {
         super(start.content, start.content);
         this.start = start;
@@ -906,7 +928,8 @@ class FiniteAutomataNode extends ExprNode{
         else
             return indent + "FiniteAutomataNode: <$\"" + start + ","+transitionSet+" >";
     }
-    
+
+     
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         if(!regexFA){
@@ -920,9 +943,15 @@ class FiniteAutomataNode extends ExprNode{
         return Type.finiteAutomataType;
     }
 
+    /**
+     * Erzeugung des FiniteAutomata-Objekts
+     * Unterscheidung, ob es sich um einen vordefinierten Automaten
+     * oder eine regulären Ausdruck handelt (regexFA)
+     */
     @Override
     public Value runExpr() {
         Value erg;
+        //endlicher Automat aus regulärem Ausdruck
         if(regexFA){
             Value ra = new Value(regex.runExpr());
             erg = new Value(ra.re.berrySethi(1));
