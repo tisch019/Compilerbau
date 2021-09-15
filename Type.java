@@ -79,7 +79,7 @@ public class Type {
 
     public static Type kgT(Type t1, Type t2) {
         if (t1==errorType || t2==errorType) return errorType;
-        if (t1==t2) return t1;
+        if (t1.equals(t2)) return t1;
         else if (t1==charType&&t2==intType) return charType;
         else if (t1==finiteAutomataType && t2==transitionType) return finiteAutomataType; // fa + transition = fa
         else return errorType;

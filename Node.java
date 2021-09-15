@@ -573,6 +573,13 @@ class BinOpNode extends ExprNode {
                         erg.fa = FiniteAutomata.union(new State("A"),leftV.fa,rightV.fa);
                     }
                 }
+                if(Type.getType(type.name) == Type.setType){
+                    erg.type = left.type;
+                    Set<Value> temp = new HashSet<Value>();
+                    temp.addAll(leftV.st);
+                    temp.addAll(rightV.st);
+                    erg.st = temp;
+                }
                     break;
                 case "-":
                 if (type == Type.intType)
@@ -1041,6 +1048,7 @@ class SetNode extends ExprNode {
         }
         Type res = Type.setType.copy();
         res.addGenTyp(setType);
+        type = res;
         return res;
     }
 
@@ -1057,8 +1065,9 @@ class SetNode extends ExprNode {
                 verified.add(zw);
         }
         Value erg = new Value(verified);
+        erg.type = type;
 
-      return erg;
+        return erg;
     }
 
 }
@@ -1122,7 +1131,8 @@ class MapNode extends ExprNode {
         Type erg = Type.mapType.copy();
         //Hinzufügen des Key- und Value-Typs als Generics (siehe Klasse Type)
         erg.addGenTyp(typeLeft);
-        erg.addGenTyp(typeRight); 
+        erg.addGenTyp(typeRight);
+        type = erg;
         return erg;
     }
 
@@ -1139,7 +1149,8 @@ class MapNode extends ExprNode {
             Value valuetype = entries.get(i).getR().runExpr();
             verified.put(key, valuetype);
         }
-        Value erg = new Value(verified);    
+        Value erg = new Value(verified);
+        erg.type = type;   
         return erg;
     }
 

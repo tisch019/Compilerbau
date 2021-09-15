@@ -53,9 +53,9 @@ public class Value {
             return fa.toString();
         }else if(type == Type.regularExpressionType){
             return re.toString();
-        }else if(type == Type.setType){
+        }else if(type.name == Type.setType.name){
             return st.toString();
-        }else if(type == Type.mapType){
+        }else if(type.name == Type.mapType.name){
             return mp.toString();
         }else if(type == Type.arrayType){
             return ar.toString();
