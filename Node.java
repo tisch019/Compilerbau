@@ -410,7 +410,9 @@ class BlockNode extends StmntNode {
     }
 }
 
-
+/**
+ * Erweiterung eines Statement-Node durch einen ExprNode
+ */
 class ExprStmntNode extends StmntNode {
     ExprNode expr;
 
@@ -429,6 +431,10 @@ class ExprStmntNode extends StmntNode {
     }
 }
 
+
+/**
+ * NumberINode als Repräsentation eines Integers
+ */
 class NumberINode extends NumberNode {
     public NumberINode(Token content) {
         super(content);
@@ -439,6 +445,10 @@ class NumberINode extends NumberNode {
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         return type = Type.intType;
     }
+    /**
+     * Umwandlung des Inhalts vom Token in einen
+     * Integer (Abspeicherung im Value)
+     */
     public Value runExpr() {
         Value erg = new Value(); erg.type = Type.intType;
         erg.i = Integer.parseInt(content.content);
@@ -482,6 +492,9 @@ class IdentifierNode extends ExprNode {
     }
 }
 
+/**
+ * Node für Operationen (op) zweier ExprNodes
+ */
 class BinOpNode extends ExprNode {
     Token op;
     ExprNode left, right;
@@ -497,6 +510,10 @@ class BinOpNode extends ExprNode {
                 + "\n"+left.toString(indent+"\t")
                 + "\n"+right.toString(indent+"\t");
     }
+
+    /**
+     * Überprüfung, ob übergebene ExprNodes miteinader operieren dürfen
+     */
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         Type leftT = left.semantischeAnalyseExpr(tabelle, errors);
         Type rightT = right.semantischeAnalyseExpr(tabelle, errors);
@@ -508,6 +525,11 @@ class BinOpNode extends ExprNode {
         if (op.kind == Token.Type.COMP) return type = Type.booleanType;
         else return type = Type.kgT(leftT, rightT);
     }
+
+    /**
+     * Ausführen der Operation (op)
+     * auf die zwei ExprNodes
+     */
     public Value runExpr() {
         Value leftV = left.runExpr();
         Value rightV = right.runExpr();
