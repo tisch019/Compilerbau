@@ -51,7 +51,6 @@ public class Parser {
     }
 
     // decl = type IDENTIFIER SEM
-    //      TODO | type IDENTIFIER SETTO expr 
     // sync: SEM
     DeclNode decl(Set<Token.Type> synco) throws IOException, ParserError{
         Set<Token.Type> sync = new HashSet<>(synco);
@@ -501,6 +500,7 @@ public class Parser {
             res = new RangeNode(entries);
         }
         else if(filter.getToken().kind == Token.Type.MAPARRAYSTART){
+            Token start = filter.getToken();
             filter.matchToken();
             if(filter.getToken(1).kind == Token.Type.MAPDELI){
                 //Map
@@ -517,7 +517,7 @@ public class Parser {
                     elements.add(pair);
                 }
                 filter.matchToken(); // ]]
-                res = new MapNode(elements);
+                res = new MapNode(start,elements);
             }else{
                 //Array
                 List<ExprNode> elements = new ArrayList<ExprNode>();
@@ -528,8 +528,21 @@ public class Parser {
                 }
                 
                 filter.matchToken(); // ]]
-                res = new ArrayNode(elements);
+                res = new ArrayNode(start,elements);
             }
+        }
+        else if(filter.getToken().kind == Token.Type.BLOCKSTART){
+            //Set
+            Token start = filter.getToken();
+            filter.matchToken();
+            List<ExprNode> elements = new ArrayList<ExprNode>();
+            while(filter.getToken().kind != Token.Type.BLOCKEND){
+                elements.add(expr(synco));
+                if(filter.getToken().kind != Token.Type.BLOCKEND)
+                    filter.matchToken(Token.Type.COMMA,synco);
+            }
+            filter.matchToken(); // }
+            res = new SetNode(start,elements);
         }
         else if (filter.getToken().kind == Token.Type.STATE
                     || filter.getToken().kind == Token.Type.STATEACC){
@@ -548,13 +561,16 @@ public class Parser {
         else if (filter.getToken().kind == Token.Type.FASTART){
             filter.matchToken();
             if(filter.getToken().kind == Token.Type.RE_SLASH){
+                //RA with REGEX
                 filter.matchToken();
                 RegularExpressionNode ra = RA(synco);
                 res = new FiniteAutomataNode(ra);
+            }else{
+                //FA with <STATE,SET<TRANSITION>>
+
             }
             filter.matchToken(Token.Type.FAEND, synco);
         }
-        //TODO SET
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
             res = new IdentifierNode(filter.getToken());
             filter.matchToken();
@@ -579,14 +595,6 @@ public class Parser {
         }
         return res;
     }
-
-    // "abc" Wort
-    // ['a','b'-'c'] Range
-    // () Klammer
-    // Klammer * + ?
-    // Wort | Wort
-    // Bsp. ( "abc" | ['A'-'Z'] )*
-    // Bsp. /"hello" ("world")? ['?','!']/
 
     /*  
         RA -> Or
