@@ -439,7 +439,7 @@ public class Parser {
         try{
             res = atom(sync);
         }catch(ParserError error){
-            //keine Ahnung
+            throw error;
         }
         if(filter.getToken().kind == Token.Type.TRANSSTART){
             filter.matchToken(); // --
@@ -501,6 +501,7 @@ public class Parser {
             res = new RangeNode(entries);
         }
         else if(filter.getToken().kind == Token.Type.MAPARRAYSTART){
+            filter.matchToken();
             if(filter.getToken(1).kind == Token.Type.MAPDELI){
                 //Map
                 //Element:Value
@@ -510,12 +511,13 @@ public class Parser {
                     ExprNode l = expr(synco);
                     filter.matchToken(Token.Type.MAPDELI, synco);
                     ExprNode r = expr(synco);
+                    if(!(filter.getToken().kind == Token.Type.MAPARRAYEND))
+                        filter.matchToken(Token.Type.COMMA, synco);
                     pair = new Pair<ExprNode,ExprNode>(l,r);
                     elements.add(pair);
                 }
                 filter.matchToken(); // ]]
-                //TODO
-                //res = new MapNode(elements);
+                res = new MapNode(elements);
             }else{
                 //Array
                 List<ExprNode> elements = new ArrayList<ExprNode>();
@@ -526,8 +528,7 @@ public class Parser {
                 }
                 
                 filter.matchToken(); // ]]
-                //TODO
-                //res = new ArrayNode(elements);
+                res = new ArrayNode(elements);
             }
         }
         else if (filter.getToken().kind == Token.Type.STATE
@@ -544,11 +545,15 @@ public class Parser {
 
             res = stateA;
         }
-        else if (filter.getToken().kind == Token.Type.LOP){
+        else if (filter.getToken().kind == Token.Type.FASTART){
             filter.matchToken();
-            res = RA(synco);
+            if(filter.getToken().kind == Token.Type.RE_SLASH){
+                filter.matchToken();
+                RegularExpressionNode ra = RA(synco);
+                res = new FiniteAutomataNode(ra);
+            }
+            filter.matchToken(Token.Type.FAEND, synco);
         }
-        //TODO FA
         //TODO SET
         else if (filter.getToken().kind == Token.Type.IDENTIFIER) {
             res = new IdentifierNode(filter.getToken());
@@ -600,7 +605,15 @@ public class Parser {
 
         res = or(sync);
 
-        filter.matchToken(Token.Type.LOP, sync);
+        filter.matchToken(Token.Type.RE_SLASH, sync);
+
+        /*try{
+            res = or(sync);
+        }catch(ParserError error){
+            if(filter.getToken().kind == Token.Type.RE_SLASH);
+            else throw error;
+        }
+        filter.matchToken(Token.Type.RE_SLASH, sync);*/
 
         return res;
     }
@@ -627,7 +640,12 @@ public class Parser {
 
         res = star(synco);
 
-        while(filter.getToken().kind != Token.Type.LOP){
+        //Dont Concat when Slash, Or, Star, Opt, Plus
+        while(filter.getToken().kind != Token.Type.RE_SLASH
+                && filter.getToken().kind != Token.Type.RE_OR
+                && filter.getToken().kind != Token.Type.RE_COVER
+                && filter.getToken().kind != Token.Type.RE_PLUS
+                && filter.getToken().kind != Token.Type.RE_BRACKETCLOSE){
             RegularExpressionNode reB = star(synco);
             RegularExpressionNode reA = res;
             res = new ConcatNode(reA,reB);
@@ -645,15 +663,18 @@ public class Parser {
         if(filter.getToken().kind == Token.Type.RE_COVER){ // *
             RegularExpressionNode e = res;
             res = new StarNode(e);
+            filter.matchToken();
         }else if(filter.getToken().kind == Token.Type.RE_OPT){ // ?
-            //Kleen: e | empty
+            //Option: e | empty
             RegularExpressionNode e = res;
-            res = new OrNode(e, new EmptyWordNode()); 
+            res = new OrNode(e, new EmptyWordNode(e));
+            filter.matchToken(); 
         }else if(filter.getToken().kind == Token.Type.RE_PLUS){ // +
             //PosKleen: e concat e*
             RegularExpressionNode e = res;
             StarNode star = new StarNode(e);
             res = new ConcatNode(e,star);
+            filter.matchToken();
         }
 
         return res;
@@ -667,13 +688,13 @@ public class Parser {
             filter.matchToken();
             Token first = filter.getToken();
             filter.matchToken(Token.Type.RE_CHAR, sync);
-            res = new RangeExprNode(first,null);
+            res = new RangeExprNode(first,first);
             Token next = null;
             while(filter.getToken().kind != Token.Type.RE_MARK){
                 next = filter.getToken();
                 filter.matchToken(Token.Type.RE_CHAR, sync);
                 RegularExpressionNode temp = res;
-                res = new ConcatNode(temp, new RangeExprNode(next,null));
+                res = new ConcatNode(temp, new RangeExprNode(next,next));
             }
             filter.matchToken();
         }else if(filter.getToken().kind == Token.Type.RE_BRACKETOPEN){

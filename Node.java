@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.ArrayList;
 
 
-//Abstrakte Klassen für alle folgenden Node-Typen zur Erstellung des AST
+/*Abstrakte Klassen für alle folgenden Node-Typen zur Erstellung des AST
 //Die abstrakte Klasse Node ist die Oberklasse aller Knotenpunkte im AST
+*/
 public abstract class Node {
     Token start, end;
 
@@ -43,7 +44,6 @@ public abstract class Node {
      */
     public void run() {}
 }
-
 
 /**
  * Abstrakte Klasse ExprNode entspricht der Klasse Node
@@ -157,7 +157,10 @@ class CUNode extends Node {
     public DeclNode(Token typ, List<Token> genericTypes, Token name, Token end) {
         super(typ, end);
         this.typ = typ;
-        this.genericTypes = genericTypes;
+        if(genericTypes == null)
+            this.genericTypes = new ArrayList<>();
+        else
+            this.genericTypes = genericTypes;
         this.name = name;
         wert = new Value();
         switch(typ.content)
@@ -224,7 +227,14 @@ class CUNode extends Node {
      * Die Deklaration wird in die Symboltabelle übernommen
      */
     public void semantischeAnalyse(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        tabelle.add(name.content, Type.getType(typ.content), this);
+        if(genericTypes.size() > 0){
+            Type newT = Type.getType(typ.content).copy();
+            for(int i = 0; i < genericTypes.size() ;i++){
+                newT.addGenTyp(Type.getType(genericTypes.get(i).content));
+            }
+            tabelle.add(name.content, newT, this);
+        }else
+            tabelle.add(name.content, Type.getType(typ.content), this);
     }
 
 }
@@ -651,7 +661,6 @@ class CharNode extends ExprNode {
     }
 }
 
-
 /**
  * Identisch zum Char-Node, 
  * wobei in der runExpr der gesamte Inhalt des Tokens content in ein Value gepackt wird
@@ -676,7 +685,6 @@ class StringNode extends ExprNode {
         return erg;
     }
 }
-
 
 /**
  * Identisch zum CharNode, wobei in der runExpr 
@@ -703,10 +711,10 @@ class BoolNode extends ExprNode {
     }
 }
 
-
-//StateNode für den endlichen Automaten
-//In der runExpr wird mit einem Boolean-Flag geprüft, 
-//ob der State akzeptierend ist oder nicht
+/*StateNode für den endlichen Automaten
+In der runExpr wird mit einem Boolean-Flag geprüft, 
+ob der State akzeptierend ist oder nicht
+*/
 class StateNode extends ExprNode{
     boolean accept = false;
     Token content;
@@ -818,16 +826,20 @@ class RangeNode extends ExprNode{
     }
 }
 
-//Transitionnode beinhaltet zwei Konstruktoren:
-//Normaler Übergang: StartState -- [Range] --> EndState
-//Epsilon-Übergang : StartState ---> EndState
-//Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
-//und zwischen EpsilonTransition und normaler Transition unterschieden
+/**Transitionnode beinhaltet zwei Konstruktoren:
+ * Normaler Übergang: StartState -- [Range] --> EndState
+ * Epsilon-Übergang : StartState ---> EndState
+ * Bei der runExpr() werden die runExpr des State-& RangeNodes aufgerufen 
+ * und zwischen EpsilonTransition und normaler Transition unterschieden
+*/
 class TransitionNode extends ExprNode {
     ExprNode start = null;
     ExprNode end = null;
     ExprNode r = null;
 
+     /**
+     * Normaler Übergang
+     */
     public TransitionNode(ExprNode start, ExprNode r, ExprNode end) {
         super(start.start, end.end);
         this.start = start;
@@ -835,12 +847,18 @@ class TransitionNode extends ExprNode {
         this.r = r;
     }
 
+     /**
+     * Epsilon-Übergang
+     */
     public TransitionNode(ExprNode start, ExprNode end) {
         super(start.start, end.end);
         this.start = start;
         this.end = end;
     }
 
+    /**
+     * Ausgabe des jeweiligen Inhalts
+     */
     @Override
     public String toString(String indent) {
         if(r == null){
@@ -851,10 +869,19 @@ class TransitionNode extends ExprNode {
         }
     }
 
+     /**
+     * Rückgabe des Typs transitionType, da Reihenfolge und Typen der Token an dieser Stelle bereits korrekt
+     */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        //TODO
         return Type.transitionType;
     }
+
+    /**
+     * Erzeugung des (Epsilon) Transitionsobjekts
+     * @return Value-Objekt mit Transition als Inhalt
+     */
     public Value runExpr() {
         Value erg;
 
@@ -868,37 +895,75 @@ class TransitionNode extends ExprNode {
     }
 }
 
-
-//FiniteAutomataNode gibt einen FiniteAutomata mit einem StartState wieder.
-//Transitionen werden über den Parser an den FiniteAutomata gebunden
+/**
+ * FiniteAutomataNode gibt einen FiniteAutomata mit einem StartState wieder.
+ * Transitionen werden über den Parser an den FiniteAutomata gebunden
+*/
 class FiniteAutomataNode extends ExprNode{
-    StateNode start = null;
+    ExprNode start;
+    ExprNode transitionSet;
+    RegularExpressionNode regex;
+    boolean regexFA;
 
-    public FiniteAutomataNode(StateNode start) {
+    /**
+     * Konstruktor endlicher Automat
+     * @param start StateNode als Start erforderlich
+     */
+    public FiniteAutomataNode(StateNode start, SetNode transitionSet) {
         super(start.content, start.content);
+        this.start = start;
+        this.transitionSet = transitionSet;
+        regexFA = false;
+    }
+    public FiniteAutomataNode(RegularExpressionNode regex){
+        super(regex.start,regex.end);
+        this.regex = regex;
+        regexFA = true;
     }
 
     @Override
     public String toString(String indent) {
-        
-        return indent + "FiniteAutomataNode: <$\"" + start.content + ", {}>";
+        if(regexFA)
+            return indent + "FiniteAutomataNode: "+regex.toString();
+        else
+            return indent + "FiniteAutomataNode: <$\"" + start + ","+transitionSet+" >";
     }
-    
+
+     
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        if(!regexFA){
+            if(start.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
+                errors.add(new SemanticError(start.start, start.start, "FA needs a State"));
+            Type setT = Type.setType.copy();
+            setT.addGenTyp(Type.transitionType);
+            if(transitionSet.semantischeAnalyseExpr(tabelle, errors) != setT);
+        }
+
         return Type.finiteAutomataType;
     }
 
+    /**
+     * Erzeugung des FiniteAutomata-Objekts
+     * Unterscheidung, ob es sich um einen vordefinierten Automaten
+     * oder eine regulären Ausdruck handelt (regexFA)
+     */
     @Override
     public Value runExpr() {
-        Value erg = new Value(new FiniteAutomata(start.runExpr().s));
+        Value erg;
+        //endlicher Automat aus regulärem Ausdruck
+        if(regexFA){
+            Value ra = new Value(regex.runExpr());
+            erg = new Value(ra.re.berrySethi(1));
+        }else{
+            erg = null;
+            // TODO
+            // States und Transitions
+        }
         return erg;
     }
 
 }
-
-
-
 
 class SetNode extends ExprNode {
     List<ExprNode> list;
@@ -966,28 +1031,28 @@ class MapNode extends ExprNode {
 
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        ExprNode typeLeft = entries.get(0).getL();
-        ExprNode typeRight = entries.get(0).getR();
+        Type typeLeft = entries.get(0).getL().semantischeAnalyseExpr(tabelle, errors);
+        Type typeRight = entries.get(0).getR().semantischeAnalyseExpr(tabelle, errors);
         int sizeList = entries.size();
         for(int i = 0; i < sizeList; i++)
         {
-            if(entries.get(i).getL().type != typeLeft.type)
+            if(entries.get(i).getL().semantischeAnalyseExpr(tabelle, errors) != typeLeft)
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes :" + entries.get(i).getL().type.toString()  + "!=" + typeLeft.type.toString()));
+                errors.add(new SemanticError(start, end, "Different Type in Map-KeyTypes :" + entries.get(i).getL().type.toString()  + "!=" + typeLeft.toString()));
             }
         }
 
         for(int i = 0; i < sizeList; i++)
         {
-            if(entries.get(i).getR().type != typeRight.type)
+            if(entries.get(i).getR().semantischeAnalyseExpr(tabelle, errors) != typeRight)
             {
-                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes :" + entries.get(i).getR().type.toString()  + "!=" + typeRight.type.toString()));
+                errors.add(new SemanticError(start, end, "Different Type in Map-ValueTypes :" + entries.get(i).getR().type.toString()  + "!=" + typeRight.toString()));
             }
         }
 
         Type erg = Type.mapType.copy();
-        erg.addGenTyp(typeLeft.type);
-        erg.addGenTyp(typeRight.type); 
+        erg.addGenTyp(typeLeft);
+        erg.addGenTyp(typeRight); 
         return erg;
     }
 
@@ -1048,7 +1113,6 @@ abstract class RegularExpressionNode extends ExprNode {
     public RegularExpressionNode(Token left, Token right) {
         super(left, right);
     }
-    
 }
 
 class OrNode extends RegularExpressionNode {
@@ -1140,8 +1204,6 @@ class StarNode extends RegularExpressionNode {
 
 }
 
-
-
 class RangeExprNode extends RegularExpressionNode {
     Token left;
     Token right;
@@ -1149,12 +1211,12 @@ class RangeExprNode extends RegularExpressionNode {
     public RangeExprNode(Token left, Token right) {
         super(left, right);
         this.left = left;
-        this.right = right;
+        this.right = right;        
     }
     @Override
     public String toString(String indent) {
 
-            if(right != null) {
+            if(left != right) {
                return indent + "RE-RangeExpr: new Range(" + left.content + "," + right.content +")" + "\n";
             } else {
                return indent + "RE-RangeExpr: new Range(" +left.content + ")" + "\n";
@@ -1171,7 +1233,7 @@ class RangeExprNode extends RegularExpressionNode {
     public Value runExpr() {
         Value erg = new Value();
 
-        if(right != null) {
+        if(left != right) {
             erg.re = new RangeExpr(new Range(left.content.charAt(0), right.content.charAt(0)));
          } else {
             erg.re = new RangeExpr(new Range(left.content.charAt(0)));
@@ -1183,8 +1245,8 @@ class RangeExprNode extends RegularExpressionNode {
 
 class EmptyWordNode extends RegularExpressionNode {
 
-    public EmptyWordNode() {
-        super(null,null);
+    public EmptyWordNode(RegularExpressionNode e) {
+        super(e.start, e.start);
     }
     @Override
     public String toString(String indent) {
