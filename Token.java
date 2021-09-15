@@ -7,6 +7,8 @@ public class Token
         DACH,           // ^
         INC,            // ++
         DEC,            // --
+        AND,            // &&
+        OR,             // ||
         BOOLNEG,        // !
         BLOCKSTART,     // {
         BLOCKEND,       // }
