@@ -567,7 +567,10 @@ public class Parser {
                 res = new FiniteAutomataNode(ra);
             }else{
                 //FA with <STATE,SET<TRANSITION>>
-
+                ExprNode state = expr(synco);
+                filter.matchToken(Token.Type.COMMA, synco);
+                ExprNode set = expr(synco);
+                res = new FiniteAutomataNode(state,set);
             }
             filter.matchToken(Token.Type.FAEND, synco);
         }

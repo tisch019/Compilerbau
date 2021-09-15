@@ -590,6 +590,9 @@ class BinOpNode extends ExprNode {
     }
 }
 
+/**
+ * Operationen, die auf einem ExprNode ausgeführt werden (-, ! für Negation)
+ */
 class UnOpNode extends ExprNode {
     Token op;
     ExprNode kid;
@@ -623,6 +626,9 @@ class UnOpNode extends ExprNode {
     }
 }
 
+/**
+ * Zum Überführen enes ExprNode in einen andern Type
+ */
 class CastNode extends ExprNode {
     Type castTo;
     ExprNode castNode;
@@ -939,8 +945,8 @@ class FiniteAutomataNode extends ExprNode{
      * Konstruktor endlicher Automat
      * @param start StateNode als Start erforderlich
      */
-    public FiniteAutomataNode(StateNode start, SetNode transitionSet) {
-        super(start.content, start.content);
+    public FiniteAutomataNode(ExprNode start, ExprNode transitionSet) {
+        super(start.start, transitionSet.end);
         this.start = start;
         this.transitionSet = transitionSet;
         regexFA = false;
