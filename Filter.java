@@ -50,7 +50,10 @@ class Filter{
                 help++;
             }
             else column += currentToken.content.length();
-            if (currentToken.kind == Token.Type.ERROR) errors.add(new LexerError(currentToken, "Unknown token " + currentToken.content));
+            if (currentToken.kind == Token.Type.ERROR){
+                errors.add(new LexerError(currentToken, "Unknown token " + currentToken.content));
+                logger.info("Token Type Error: " + currentToken.content);
+            }
         } while (currentToken.kind == Token.Type.WS || currentToken.kind == Token.Type.ERROR);
         if (currentToken.kind == Token.Type.IDENTIFIER) {
             logger.info("Content of current token from kind identifier: " + currentToken.content);

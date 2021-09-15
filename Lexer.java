@@ -373,6 +373,7 @@ public class Lexer {
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
+                        start--;
                         state = 100;
                     }
                     break;
@@ -460,8 +461,9 @@ public class Lexer {
                             break;
                         case '\'':
                             mark();
-                            t.kind = Token.Type.RE_SINGLEMARK;
-                            state = 100;
+                            t.kind = Token.Type.RE_CHAR;
+                            state = 51;
+                            start++;
                             break;
                         case '-':
                             mark();
@@ -541,6 +543,23 @@ public class Lexer {
                             state = 100;
                     }
                     firstInRegex = false;
+                    break;
+                case 51:
+                    mark();
+                    state = 52;
+                    break;
+                case 52:
+                    if (nextChar == '\'') {
+                        startOffset++;
+                        state = 100;
+                    } else {
+                        mark();
+                        t.kind = Token.Type.ERROR;
+                        logger.info("Error in Lexer at case 52 in Regex. No closing tik after char.");
+                        start--;
+                        state = 100;
+                    }
+                    break;
             }
         } while (state != 100);
         if (marked == -1) {
