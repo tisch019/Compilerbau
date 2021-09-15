@@ -447,7 +447,6 @@ public class Lexer {
                     if (nextChar == '+') {
                         mark();
                         t.kind = Token.Type.INC;
-                        start = current;
                     }
                     state = 100;
                     break;      
