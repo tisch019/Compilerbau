@@ -1,6 +1,8 @@
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+
 import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
@@ -1002,8 +1004,8 @@ class SetNode extends ExprNode {
     List<ExprNode> list;
     
     
-    public SetNode(List<ExprNode> list){
-        super(list.get(0).start, list.get(list.size()-1).end);
+    public SetNode(Token start,List<ExprNode> list){
+        super(start, start);
         this.list = list;
     }
 
@@ -1018,20 +1020,23 @@ class SetNode extends ExprNode {
      */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        //Typ des ersten Elements
-        ExprNode typeValue = list.get(0);
-        //Größe der Liste
-        int sizeList = list.size();
-        for(int i = 0; i < sizeList; i++)
+        if(list.size() == 0)
+            return Type.setType;
+
+        Type setType = list.get(0).semantischeAnalyseExpr(tabelle, errors);
+        
+        for(int i = 0; i < list.size(); i++)
         {
             //Prüfung der Typen in der Liste
-            if(list.get(i).type.toString() != typeValue.type.toString())
+            if(list.get(i).semantischeAnalyseExpr(tabelle, errors) != setType )
             {
-                errors.add(new SemanticError(start, end, "Different Type in Set (Token: "+ list.get(i).type.toString() + " vs " + typeValue.type.toString() + " Type of Set)"));
+                errors.add(new SemanticError(start, end, "Different Type in Set: received "+ list.get(i).type + " but expected " + setType));
                 return Type.errorType;
             }
         }
-        return Type.setType;
+        Type res = Type.setType.copy();
+        res.addGenTyp(setType);
+        return res;
     }
 
     /**
@@ -1061,8 +1066,8 @@ class MapNode extends ExprNode {
     //Stets gleiche Anzahl an Keys und Values in der Map
     List<Pair<ExprNode,ExprNode>> entries;
 
-    public MapNode(List<Pair<ExprNode,ExprNode>> entries){
-        super(entries.get(0).getL().start, entries.get(entries.size()-1).getR().end);
+    public MapNode(Token start,List<Pair<ExprNode,ExprNode>> entries){
+        super(start,start);
         this.entries = entries;
     }
 
@@ -1082,6 +1087,9 @@ class MapNode extends ExprNode {
      */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
+        if(entries.size() == 0)
+            return Type.mapType;
+        
         //Key-Typ der Map
         Type typeLeft = entries.get(0).getL().semantischeAnalyseExpr(tabelle, errors);
         //Value-Typ der Map
@@ -1140,8 +1148,8 @@ class ArrayNode extends ExprNode {
     List<ExprNode> list;
     
     
-    public ArrayNode(List<ExprNode> list){
-        super(list.get(0).start, list.get(list.size()-1).end);
+    public ArrayNode(Token start, List<ExprNode> list){
+        super(start,start);
         this.list = list;
     }
 
