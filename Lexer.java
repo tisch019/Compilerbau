@@ -160,6 +160,16 @@ public class Lexer {
                             state = 5;
                             start++;
                             break;
+                        case '&':
+                            mark();
+                            t.kind = Token.Type.AND;
+                            state = 30;
+                            break;
+                        case '|':
+                            mark();
+                            t.kind = Token.Type.OR;
+                            state = 31;
+                            break;
                         case '!':
                             mark();
                             t.kind = Token.Type.BOOLNEG;
@@ -448,6 +458,21 @@ public class Lexer {
                         mark();
                         t.kind = Token.Type.INC;
                     }
+                    state = 100;
+                    break; 
+                // Case 30 AND
+                case 30:
+                    if (nextChar != '&') {
+                        t.kind = Token.Type.ERROR;
+                    }
+                    mark();
+                    state = 100;
+                    break; 
+                case 31:
+                    if (nextChar != '|') {
+                        t.kind = Token.Type.ERROR;
+                    }
+                    mark();
                     state = 100;
                     break;      
                 //REGEX
