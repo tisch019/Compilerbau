@@ -65,8 +65,6 @@ public class Token
         RE_OR,          // |
         RE_SBOPEN,      // [
         RE_SBCLOSE,     // ]
-        RE_SINGLEMARK,  // '
-        RE_RANGECHAR,   // A
         RE_RANGE,       // -
         RE_COVER,       // *
         RE_OPT,         // ?
