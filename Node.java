@@ -643,35 +643,6 @@ class UnOpNode extends ExprNode {
 }
 
 /**
- * Zum Überführen enes ExprNode in einen andern Type
- */
-class CastNode extends ExprNode {
-    Type castTo;
-    ExprNode castNode;
-    public CastNode(ExprNode node, Type targetType) {
-        super(node.start, node.end);
-        castNode = node;
-        type = castTo = targetType;
-    }
-
-    @Override
-    public String toString(String indent) {
-        return "CastNode";
-    }
-
-    @Override
-    public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        return castTo;
-    }
-    public Value runExpr() {
-        Value erg = castNode.runExpr().copy();
-        erg.type = castTo;
-        erg.c = (char)erg.i;
-        return erg;
-    }
-}
-
-/**
  * Knoten eines einzelnen Char-Zeichens, welcher in einem Token enthalten ist
  */
 class CharNode extends ExprNode {
