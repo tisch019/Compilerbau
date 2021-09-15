@@ -501,6 +501,7 @@ public class Parser {
             res = new RangeNode(entries);
         }
         else if(filter.getToken().kind == Token.Type.MAPARRAYSTART){
+            filter.matchToken();
             if(filter.getToken(1).kind == Token.Type.MAPDELI){
                 //Map
                 //Element:Value
@@ -510,12 +511,13 @@ public class Parser {
                     ExprNode l = expr(synco);
                     filter.matchToken(Token.Type.MAPDELI, synco);
                     ExprNode r = expr(synco);
+                    if(!(filter.getToken().kind == Token.Type.MAPARRAYEND))
+                        filter.matchToken(Token.Type.COMMA, synco);
                     pair = new Pair<ExprNode,ExprNode>(l,r);
                     elements.add(pair);
                 }
                 filter.matchToken(); // ]]
-                //TODO
-                //res = new MapNode(elements);
+                res = new MapNode(elements);
             }else{
                 //Array
                 List<ExprNode> elements = new ArrayList<ExprNode>();
@@ -526,8 +528,7 @@ public class Parser {
                 }
                 
                 filter.matchToken(); // ]]
-                //TODO
-                //res = new ArrayNode(elements);
+                res = new ArrayNode(elements);
             }
         }
         else if (filter.getToken().kind == Token.Type.STATE
