@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.lang.model.type.ErrorType;
 
 import java.util.Map;
 import java.util.LinkedList;
@@ -519,13 +520,18 @@ class BinOpNode extends ExprNode {
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
         Type leftT = left.semantischeAnalyseExpr(tabelle, errors);
         Type rightT = right.semantischeAnalyseExpr(tabelle, errors);
+        Type res;
         if (!(leftT.equals(rightT))) {
             if (leftT == Type.kgT(leftT, rightT))
-                right = new CastNode(right, Type.kgT(leftT, rightT));
-            else left = new CastNode(left, Type.kgT(leftT, rightT));
+                res = leftT;
+            else {
+                errors.add(new SemanticError(start, end, "Incompatible Types for BinOp "+ leftT.name + " : " + rightT.name));
+                res = Type.errorType;
+            }
         }
-        if (op.kind == Token.Type.COMP) return type = Type.booleanType;
-        else return type = Type.kgT(leftT, rightT);
+        if (op.kind == Token.Type.COMP) res = type = Type.booleanType;
+        else res = type = Type.kgT(leftT, rightT);
+        return res;
     }
 
     /**
@@ -556,6 +562,10 @@ class BinOpNode extends ExprNode {
                 case "+":
                 if (type == Type.intType)
                     erg.i = leftV.i + rightV.i;
+                if (type == Type.charType){
+                    if(right.type == Type.intType)
+                        erg.c = (char) (leftV.c + rightV.i);
+                }
                     break;
                 case "-":
                 if (type == Type.intType)
@@ -572,12 +582,8 @@ class BinOpNode extends ExprNode {
                     break;
                 case "/": if (type == Type.intType)
                     erg.i = leftV.i / rightV.i;
-                else if (type == Type.intType)
-                    erg.i = leftV.i / rightV.i;
                     break;
                 case "%": if (type == Type.intType)
-                    erg.i = leftV.i % rightV.i;
-                else if (type == Type.intType)
                     erg.i = leftV.i % rightV.i;
                     break;
             }
@@ -660,7 +666,7 @@ class CastNode extends ExprNode {
     public Value runExpr() {
         Value erg = castNode.runExpr().copy();
         erg.type = castTo;
-        //TODO
+        erg.c = (char)erg.i;
         return erg;
     }
 }

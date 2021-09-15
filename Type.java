@@ -80,12 +80,14 @@ public class Type {
     public static boolean canCast(Type t1, Type t2) {
         if (t1==errorType || t2==errorType) return true;
         if (t1==t2) return true;
+        else if(t1==charType&&t2==intType) return true;
         else if (t1 == finiteAutomataType && t2 == regularExpressionType) return true;
         else return false;
     }
     public static Type kgT(Type t1, Type t2) {
         if (t1==errorType || t2==errorType) return errorType;
         if (t1==t2) return t1;
+        else if (t1==charType&&t2==intType) return charType;
         else if (t1==finiteAutomataType && t2==regularExpressionType) return finiteAutomataType; //fa + ra = fa
         else if (t1==regularExpressionType && t2==finiteAutomataType) return finiteAutomataType; //ra + fa = fa
         else if (t1==finiteAutomataType && t2==transitionType) return finiteAutomataType; // fa + transition = fa
