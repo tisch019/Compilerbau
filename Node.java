@@ -939,8 +939,8 @@ class FiniteAutomataNode extends ExprNode{
      * Konstruktor endlicher Automat
      * @param start StateNode als Start erforderlich
      */
-    public FiniteAutomataNode(StateNode start, SetNode transitionSet) {
-        super(start.content, start.content);
+    public FiniteAutomataNode(ExprNode start, ExprNode transitionSet) {
+        super(start.start, transitionSet.end);
         this.start = start;
         this.transitionSet = transitionSet;
         regexFA = false;
