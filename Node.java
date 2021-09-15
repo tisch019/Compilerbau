@@ -896,7 +896,13 @@ class TransitionNode extends ExprNode {
      */
     @Override
     public Type semantischeAnalyseExpr(SymbolTabelle tabelle, List<InterpreterError> errors) {
-        //TODO
+        if(start.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
+            errors.add(new SemanticError(start.start, start.end, "transition start needs to be a State"));
+        if(end.semantischeAnalyseExpr(tabelle, errors) != Type.stateType)
+            errors.add(new SemanticError(end.start, end.end, "transition end needs to be a State"));
+        if(r != null)
+            if(r.semantischeAnalyseExpr(tabelle, errors) != Type.rangeType)
+                errors.add(new SemanticError(start.start, start.end, "transition range needs to be a Range"));
         return Type.transitionType;
     }
 
