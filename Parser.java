@@ -703,15 +703,11 @@ public class Parser {
             filter.matchToken(Token.Type.RE_BRACKETCLOSE, sync);
         }else if(filter.getToken().kind == Token.Type.RE_SBOPEN){
             filter.matchToken();
-            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
             Token raA = filter.getToken();
             filter.matchToken(Token.Type.RE_CHAR, sync);
-            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
             filter.matchToken(Token.Type.RE_RANGE, sync);
-            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
             Token raB = filter.getToken();
             filter.matchToken(Token.Type.RE_CHAR, sync);
-            filter.matchToken(Token.Type.RE_SINGLEMARK, sync);
             filter.matchToken(Token.Type.RE_SBCLOSE, sync);
             res = new RangeExprNode(raA,raB);
         }else{
