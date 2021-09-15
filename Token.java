@@ -5,6 +5,8 @@ public class Token
         LOP,            // % * /
         POP,            // + -
         DACH,           // ^
+        INC,            // ++
+        DEC,            // --
         BOOLNEG,        // !
         BLOCKSTART,     // {
         BLOCKEND,       // }
