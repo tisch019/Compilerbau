@@ -1262,7 +1262,7 @@ class EmptyWordNode extends RegularExpressionNode {
     @Override
     public Value runExpr() {
         Value erg = new Value();
-        erg.re = null;
+        erg.re = new EmptyWord();
         return erg;
     }
     
