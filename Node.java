@@ -590,6 +590,9 @@ class BinOpNode extends ExprNode {
     }
 }
 
+/**
+ * Operationen, die auf einem ExprNode ausgeführt werden (-, ! für Negation)
+ */
 class UnOpNode extends ExprNode {
     Token op;
     ExprNode kid;
@@ -623,6 +626,9 @@ class UnOpNode extends ExprNode {
     }
 }
 
+/**
+ * Zum Überführen enes ExprNode in einen andern Type
+ */
 class CastNode extends ExprNode {
     Type castTo;
     ExprNode castNode;
