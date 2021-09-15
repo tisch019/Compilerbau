@@ -566,6 +566,13 @@ class BinOpNode extends ExprNode {
                     if(right.type == Type.intType)
                         erg.c = (char) (leftV.c + rightV.i);
                 }
+                if(type == Type.finiteAutomataType){
+                    if(right.type == Type.transitionType){
+                        erg.fa = leftV.fa.addTransitions(rightV.t);
+                    }else if(right.type == Type.finiteAutomataType){
+                        erg.fa = FiniteAutomata.union(new State("A"),leftV.fa,rightV.fa);
+                    }
+                }
                     break;
                 case "-":
                 if (type == Type.intType)
