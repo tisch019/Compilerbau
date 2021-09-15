@@ -15,6 +15,7 @@ public class Lexer {
     boolean firstInRegex;
     boolean lastInRegex;
     boolean inRegex;
+    boolean inFa;
     boolean ended = false;
     InputStream input = null;
 
@@ -23,6 +24,7 @@ public class Lexer {
         input = new FileInputStream(name);
         logger.info("Lexer created");
         inRegex = false;
+        inFa = false;
         firstInRegex = false;
         lastInRegex = false;
     }
@@ -86,7 +88,7 @@ public class Lexer {
                         case '}':
                             mark();
                             t.kind = Token.Type.BLOCKEND;
-                            state = 20;
+                            state = 100;
                             break;
                         case '[':
                             mark();
@@ -165,8 +167,14 @@ public class Lexer {
                             break;
                         case '>':
                             mark();
-                            t.kind = Token.Type.COMP;
-                            state = 1;
+                            if(inFa) {
+                                t.kind = Token.Type.FAEND;
+                                inFa = false;
+                                state = 100;
+                            } else {
+                                t.kind = Token.Type.COMP;
+                                state = 1;
+                            }
                             break;
                         case '=':
                             mark();
@@ -210,6 +218,7 @@ public class Lexer {
                         t.kind = Token.Type.COMP;
                     } else if (nextChar == '$') {
                         t.kind = Token.Type.FASTART;
+                        inFa = true;
                     } else if (nextChar == '/') {
                         t.kind = Token.Type.FASTART;
                         inRegex = true;
@@ -348,14 +357,6 @@ public class Lexer {
                     // --- Wird auch als TRANSSTART erkannt
                     state = 100;
                     break;
-                // Case 20 FAEND
-                case 20:
-                    if (nextChar == '>') {
-                        mark();
-                        t.kind = Token.Type.FAEND;
-                    }
-                    state = 100;
-                    break;
                 // Case 21 STRING
                 case 21:
                     if (nextChar == '"') {
@@ -413,6 +414,11 @@ public class Lexer {
                         mark();
                         state = 0;
                         start = current;
+                    }
+                    if (nextChar == -1) {
+                        t.kind = Token.Type.EOF;
+                        mark();
+                        state = 100;
                     }
                     break;
                 case 27:
