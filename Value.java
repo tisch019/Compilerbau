@@ -36,7 +36,7 @@ public class Value {
         }else if(type == Type.stringType){
             return stg;
         }else if(type == Type.intType){
-            return String.valueOf(stg);
+            return String.valueOf(i);
         }else if(type == Type.booleanType){
             return String.valueOf(b);
         }else if(type == Type.arrayType){
