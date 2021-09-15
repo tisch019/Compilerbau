@@ -4,6 +4,7 @@ public class Token
     {
         LOP,            // % * /
         POP,            // + -
+        DACH,           // ^
         BOOLNEG,        // !
         BLOCKSTART,     // {
         BLOCKEND,       // }

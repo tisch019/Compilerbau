@@ -128,6 +128,11 @@ public class Lexer {
                             t.kind = Token.Type.WS;
                             state = 100;
                             break;
+                        case '^':
+                            mark();
+                            t.kind = Token.Type.DACH;
+                            state = 100;
+                            break;
                         case '+':
                             mark();
                             t.kind = Token.Type.POP;
