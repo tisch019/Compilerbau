@@ -136,7 +136,7 @@ public class Lexer {
                         case '+':
                             mark();
                             t.kind = Token.Type.POP;
-                            state = 100;
+                            state = 29;
                             break;
                         case '-':
                             mark();
@@ -442,6 +442,15 @@ public class Lexer {
                         state = 27;
                     }
                     break;
+                // Case 29 INC
+                case 29:
+                    if (nextChar == '+') {
+                        mark();
+                        t.kind = Token.Type.INC;
+                        start = current;
+                    }
+                    state = 100;
+                    break;      
                 //REGEX
                 case 50:
                     switch (nextChar) {
