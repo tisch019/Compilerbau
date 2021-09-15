@@ -113,7 +113,9 @@ public class Type {
                 else
                     return false;
             }
-        }else
+        }else if(t.genericTypes.size()==0)
+            ret = true;
+        else
             return false;
         return ret;
     }
