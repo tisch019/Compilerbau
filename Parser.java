@@ -349,14 +349,15 @@ public class Parser {
         Set<Token.Type> sync =  new HashSet<>();
         ExprNode res = null;
 
+        Token test = filter.getToken();
         if(filter.getToken().kind == Token.Type.BOOLNEG){
             Token op = filter.getToken();
             filter.matchToken();
             ExprNode exp = expr(synco);
             res = new UnOpNode(op,exp);
-        }else
+        }else {
             res = expr(synco);
-
+        }
         return res;
     }
 
