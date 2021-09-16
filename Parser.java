@@ -333,7 +333,8 @@ public class Parser {
         Token end = null;
         ExprNode expr = null;
         try {
-            expr = expr(sync);
+            expr = neg(sync);
+            //expr = expr(sync);
             end = filter.getToken();
             filter.matchToken(Token.Type.SEM, sync);
         } catch (ParserError error) {
@@ -341,6 +342,22 @@ public class Parser {
             else throw error;
         }
         return new ExprStmntNode(expr, end);
+    }
+
+    // neg = {!} expr
+    ExprNode neg(Set<Token.Type> synco) throws IOException, ParserError {
+        Set<Token.Type> sync =  new HashSet<>();
+        ExprNode res = null;
+
+        if(filter.getToken().kind == Token.Type.BOOLNEG){
+            Token op = filter.getToken();
+            filter.matchToken();
+            ExprNode exp = expr(synco);
+            res = new UnOpNode(op,exp);
+        }else
+            res = expr(synco);
+
+        return res;
     }
 
     // expr = IDENTIFIER "=" expr | comp
@@ -379,10 +396,14 @@ public class Parser {
         try {
             res = sum(sync);
         } catch (ParserError error) {
-            if (filter.getToken().kind == Token.Type.COMP) ;
+            if (filter.getToken().kind == Token.Type.COMP
+            || filter.getToken().kind == Token.Type.AND
+            || filter.getToken().kind == Token.Type.OR) ;
             else throw error;
         }
-        if (filter.getToken().kind == Token.Type.COMP) {
+        if (filter.getToken().kind == Token.Type.COMP
+            || filter.getToken().kind == Token.Type.AND
+            || filter.getToken().kind == Token.Type.OR) {
             ExprNode left = res;
             Token op = filter.getToken();
             filter.matchToken();
@@ -396,7 +417,8 @@ public class Parser {
     // no syncs ???
     ExprNode sum(Set<Token.Type> synco) throws IOException, ParserError {
         ExprNode res =  prod(synco);
-        while (filter.getToken().kind == Token.Type.POP) {
+        while (filter.getToken().kind == Token.Type.POP
+                || filter.getToken().kind == Token.Type.DACH) {
             Token op = filter.getToken();
             filter.matchToken();
             ExprNode left = res;

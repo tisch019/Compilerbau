@@ -543,47 +543,61 @@ class BinOpNode extends ExprNode {
         Value rightV = right.runExpr();
         Value erg  = new Value();
 
-        if (op.kind == Token.Type.COMP) {
+        if (op.kind == Token.Type.COMP
+            || op.kind == Token.Type.AND
+            || op.kind == Token.Type.OR) {
             erg.type = Type.booleanType;
             switch (op.content) {
                 case "<":
-                if (type == Type.intType)
-                    erg.b = leftV.i < rightV.i;
-                    break;
+                    if (type == Type.intType)
+                        erg.b = leftV.i < rightV.i;
+                        break;
                 case ">":
-                if (type == Type.intType)
-                    erg.b = leftV.i > rightV.i;
-                    break;
+                    if (type == Type.intType)
+                        erg.b = leftV.i > rightV.i;
+                        break;
+                case "&&":
+                    if (type == Type.booleanType)
+                        erg.b = leftV.b && rightV.b;
+                        break;
+                case "||":
+                    if (type == Type.booleanType)
+                        erg.b = leftV.b || rightV.b;
+                        break;
             }
         }
         else if (op.kind == Token.Type.POP) {
             erg.type = type;
             switch (op.content) {
                 case "+":
-                if (type == Type.intType)
-                    erg.i = leftV.i + rightV.i;
-                if (type == Type.charType){
-                    if(right.type == Type.intType)
-                        erg.c = (char) (leftV.c + rightV.i);
-                }
-                if(type == Type.finiteAutomataType){
-                    if(right.type == Type.transitionType){
-                        erg.fa = leftV.fa.addTransitions(rightV.t);
-                    }else if(right.type == Type.finiteAutomataType){
-                        erg.fa = FiniteAutomata.union(new State("A"),leftV.fa,rightV.fa);
+                    if (type == Type.intType)
+                        erg.i = leftV.i + rightV.i;
+                    if (type == Type.charType){
+                        if(right.type == Type.intType)
+                            erg.c = (char) (leftV.c + rightV.i);
                     }
-                }
-                if(Type.getType(type.name) == Type.setType){
-                    erg.type = left.type;
-                    Set<Value> temp = new HashSet<Value>();
-                    temp.addAll(leftV.st);
-                    temp.addAll(rightV.st);
-                    erg.st = temp;
-                }
+                    if(type == Type.finiteAutomataType){
+                        if(right.type == Type.transitionType){
+                            erg.fa = leftV.fa.addTransitions(rightV.t);
+                        }else if(right.type == Type.finiteAutomataType){
+                            erg.fa = FiniteAutomata.union(new State("A"),leftV.fa,rightV.fa);
+                        }
+                    }
+                    if(Type.getType(type.name) == Type.setType){
+                        erg.type = left.type;
+                        Set<Value> temp = new HashSet<Value>();
+                        temp.addAll(leftV.st);
+                        temp.addAll(rightV.st);
+                        erg.st = temp;
+                    }
                     break;
                 case "-":
-                if (type == Type.intType)
-                    erg.i = leftV.i - rightV.i;
+                    if (type == Type.intType)
+                        erg.i = leftV.i - rightV.i;
+                    if(Type.getType(type.name) == Type.setType){
+                        erg.type = left.type;
+                        erg.st = Extensions.removeAll(leftV.st, rightV.st);
+                    }
                     break;
             }
         }
@@ -600,6 +614,13 @@ class BinOpNode extends ExprNode {
                 case "%": if (type == Type.intType)
                     erg.i = leftV.i % rightV.i;
                     break;
+            }
+        }
+        else if (op.kind == Token.Type.DACH){
+            erg.type = type;
+            if (Type.getType(type.name) == Type.setType){
+                erg.type = left.type;
+                erg.st = Extensions.intersection(leftV.st, rightV.st);
             }
         }
         else if (op.kind == Token.Type.SETTO) {

@@ -39,3 +39,39 @@ fa = <$"A",{}>;
 fa = <$"A",set>;
 
 print fa;
+
+
+int i;
+i = 1;
+char a;
+a = 'c';
+
+print a+i;
+
+FA fc;
+fc = <$"C",{}>;
+
+FA fb;
+fb = <$"B",{}>;
+
+FA ft;
+ft = fc+t;
+
+FA ff;
+ff = fc + fb;
+
+Set<char> sa;
+Set<char> sb;
+Set<char> sab;
+
+sa = {'a','b'};
+sb = {'c'};
+sab = sa + sb;
+
+print sab;
+
+boolean a;
+a = true;
+boolean b;
+b = false;
+print a&&b;
