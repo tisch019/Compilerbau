@@ -383,15 +383,8 @@ public class Lexer {
                     break;
                 // Case 22 - 23 CHAR
                 case 22:
-                    if (isIdentChar(nextChar)) {
-                        mark();
-                        state = 23;
-                    } else {
-                        mark();
-                        t.kind = Token.Type.ERROR;
-                        start--;
-                        state = 100;
-                    }
+                    mark();
+                    state = 23;
                     break;
                 case 23:
                     if (nextChar == '\'') {
@@ -400,6 +393,7 @@ public class Lexer {
                     } else {
                         mark();
                         t.kind = Token.Type.ERROR;
+                        start--;
                         state = 100;
                     }
                     break;
