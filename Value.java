@@ -21,6 +21,7 @@ public class Value {
     Value va[];
     
 
+  
     //RE-Types aus der Klasse RegularExpression.java
     //Or or;
     //Concat con;
