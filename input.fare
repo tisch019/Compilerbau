@@ -42,7 +42,7 @@ set = {t};
 
 
 //Erzeugen eines vordefinierten endlichen Automaten
-//set als Übergabe einer Transition
+//set als Übergabe einer Transition (Zeile 41)
 State start;
 start = $"A";
 
@@ -107,4 +107,14 @@ a = true;
 boolean b;
 b = false;
 print a&&b;
+
+
+//Addition eines Integers mit einem Char, wobei im Char eine Zahl steht (cast)
+char v;
+v='2';
+
+int r;
+r=1;
+
+print v + r;
 

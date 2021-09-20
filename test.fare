@@ -1,7 +1,7 @@
-char a;
-a='2';
+char v;
+v='2';
 
-int b;
-b=2;
+int r;
+r=1;
 
-print a + b;
+print v + r;
