@@ -344,7 +344,7 @@ public class Parser {
         return new ExprStmntNode(expr, end);
     }
 
-    // neg = {!} expr
+    // expr = {!} set
     ExprNode expr(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync =  new HashSet<>();
         ExprNode res = null;
