@@ -85,14 +85,17 @@ public class Type {
         else return errorType;
     }
 
+    //Typ wird der Generic-Liste hinzugefügt
     public void addGenTyp(Type t){
         genericTypes.add(t);
     }
 
+    //Kopie des Value-Objekts
     public Type copy(){
         return new Type(this.name);
     }
     
+    //Prüfung, ob zwei Objekte Type-Objekte gleich sind ("Operator-Überladung ==")
     @Override
     public boolean equals(Object obj){
         Type t = (Type) obj;

@@ -1,3 +1,4 @@
+//Beispiel für den Aufbau einer Transition
 State a;
 a = $"A";
 print a;
@@ -17,20 +18,31 @@ print t;
 t = a--c-->b;
 print t;
 
+
+//Erzeugung einer Map mit char als Key- und Value-Typ
 Map<char,char> m;
 m = [['A':'a','B':'b']];
 print m;
 
+
+//Erzeugung eines endlichen Automaten aus einem regulären Ausdruck
 FA fa;
 fa = </("abc"|['A'-'Z'])*/>;
 print fa;
 
+
+//Überschreiben des endlichen Automaten
 fa = </"hello" ("world")? ['?'-'!']/>;
 print fa;
 
+//Erzeugen eines Set mit Transition als generischen Typen
+//und Übergabe der Transition t aus Zeile 18
 Set<Transition> set;
 set = {t};
 
+
+//Erzeugen eines vordefinierten endlichen Automaten
+//set als Übergabe einer Transition
 State start;
 start = $"A";
 
@@ -40,7 +52,7 @@ fa = <$"A",set>;
 
 print fa;
 
-
+//Addition von einem Cast-Beispiel eines int in einen char
 int i;
 i = 1;
 char a;
@@ -48,18 +60,23 @@ a = 'c';
 
 print a+i;
 
+
+//Erzeugen zweier "normaler" endlicher Automaten
 FA fc;
 fc = <$"C",{}>;
 
 FA fb;
 fb = <$"B",{}>;
 
+//Addition einer Transition (Zeile 18) zu einem endlichen Automaten (Zeile 65)
 FA ft;
 ft = fc+t;
 
+//Addition zweier endlicher Automaten (Zeile 65/ 68)
 FA ff;
 ff = fc + fb;
 
+//Ad
 Set<char> sa;
 Set<char> sb;
 Set<char> sab;
@@ -70,8 +87,21 @@ sab = sa + sb;
 
 print sab;
 
+
+char a;
+a='2';
+
+int b;
+b=2;
+
+print a + b;
+
+
 boolean a;
 a = true;
-boolean b;
-b = false;
-print a&&b;
+if(!a){
+    print 1;
+} else {
+    print 0;
+}
+
