@@ -85,7 +85,7 @@ public class Parser {
 
     DeclNode mapDecl(Set<Token.Type> sync) throws IOException, ParserError{
         // Map<type,type>
-        // KEYMAP COMP ({ KEY } COMMA? )* COMP
+        // KEYMAP "<" type COMMA type ">"
         Token typ = null;
         Token name = null;
         Token sem = null;
@@ -130,7 +130,7 @@ public class Parser {
 
     DeclNode setDecl(Set<Token.Type> sync) throws IOException, ParserError{
         // Set<type>
-        // KEYSET COMP KEY COMP
+        // KEYSET "<" type ">"
         Token typ = null;
         Token name = null;
         Token sem = null;
@@ -333,7 +333,7 @@ public class Parser {
         Token end = null;
         ExprNode expr = null;
         try {
-            expr = neg(sync);
+            expr = expr(sync);
             //expr = expr(sync);
             end = filter.getToken();
             filter.matchToken(Token.Type.SEM, sync);
@@ -345,7 +345,7 @@ public class Parser {
     }
 
     // neg = {!} expr
-    ExprNode neg(Set<Token.Type> synco) throws IOException, ParserError {
+    ExprNode expr(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync =  new HashSet<>();
         ExprNode res = null;
 
@@ -353,17 +353,17 @@ public class Parser {
         if(filter.getToken().kind == Token.Type.BOOLNEG){
             Token op = filter.getToken();
             filter.matchToken();
-            ExprNode exp = expr(synco);
+            ExprNode exp = set(synco);
             res = new UnOpNode(op,exp);
         }else {
-            res = expr(synco);
+            res = set(synco);
         }
         return res;
     }
 
-    // expr = IDENTIFIER "=" expr | comp
+    // set = IDENTIFIER "=" expr | comp
     // sync:            ^ "="
-    ExprNode expr(Set<Token.Type> synco) throws IOException, ParserError {
+    ExprNode set(Set<Token.Type> synco) throws IOException, ParserError {
         Set<Token.Type> sync =  new HashSet<>();
         sync.add(Token.Type.SETTO);
 
