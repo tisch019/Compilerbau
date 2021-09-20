@@ -1,12 +1,7 @@
-Set<int> s;
-s = {1,2, 3};
+char a;
+a='2';
 
-Set<int> x;
-x = {2,4};
+int b;
+b=2;
 
-Set<int> y;
-y = x ^ s;
-print y;
-
-y = x - s;
-print y;
+print a + b;

@@ -1004,7 +1004,7 @@ class FiniteAutomataNode extends ExprNode{
     /**
      * Erzeugung des FiniteAutomata-Objekts
      * Unterscheidung, ob es sich um einen vordefinierten Automaten
-     * oder eine regulären Ausdruck handelt (regexFA)
+     * oder einen regulären Ausdruck handelt (regexFA)
      */
     @Override
     public Value runExpr() {
