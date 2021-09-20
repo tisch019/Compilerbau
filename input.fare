@@ -52,7 +52,7 @@ fa = <$"A",set>;
 
 print fa;
 
-//Addition von einem Cast-Beispiel eines int in einen char
+//Addition eines Char mit einem Integer
 int i;
 i = 1;
 char a;
@@ -76,7 +76,7 @@ ft = fc+t;
 FA ff;
 ff = fc + fb;
 
-//Ad
+//Addition zweier Sets von Typ char
 Set<char> sa;
 Set<char> sb;
 Set<char> sab;
@@ -85,23 +85,26 @@ sa = {'a','b'};
 sb = {'c'};
 sab = sa + sb;
 
-print sab;
+//Schnittmenge von zwei Sets vov Typ int
+Set<int> s;
+s = {1,2, 3};
+
+Set<int> w;
+w = {2,4};
+
+Set<int> y;
+y = w ^ s;
+print y;
+
+//Subtraktion von zwei Sets vom Typ int
+y = w - s;
+print y;
 
 
-char a;
-a='2';
-
-int b;
-b=2;
-
-print a + b;
-
-
+//Verundung von zwei Boolean mit Ausgabe
 boolean a;
 a = true;
-if(!a){
-    print 1;
-} else {
-    print 0;
-}
+boolean b;
+b = false;
+print a&&b;
 

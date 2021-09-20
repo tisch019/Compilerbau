@@ -5,7 +5,7 @@ public class Main{
     public static void main(String[] args) {
         List<InterpreterError> errors = new LinkedList<>();
         try{
-            Lexer lexer = new Lexer("test.fare");
+            Lexer lexer = new Lexer("input.fare");
             Filter filter = new Filter(lexer, errors);
             Parser parser = new Parser(filter, errors);
             CUNode root = parser.compilationUnit();
